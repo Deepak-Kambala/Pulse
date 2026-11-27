@@ -132,11 +132,7 @@ struct SettingsView: View {
                 // About
                 PulseCard {
                     HStack(spacing: 16) {
-                        Image(systemName: "waveform.path.ecg")
-                            .font(.system(size: 28, weight: .semibold))
-                            .foregroundStyle(LinearGradient(colors: [PulseTheme.accent, PulseTheme.secondaryAccent], startPoint: .leading, endPoint: .trailing))
-                            .frame(width: 52, height: 52)
-                            .background(RoundedRectangle(cornerRadius: 12).fill(PulseTheme.secondaryCard))
+                        PulseBrandIcon(size: 52, cornerRadius: 12)
 
                         VStack(alignment: .leading, spacing: 3) {
                             Text("Pulse for macOS")

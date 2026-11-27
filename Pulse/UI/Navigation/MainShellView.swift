@@ -36,24 +36,7 @@ struct MainShellView: View {
         VStack(spacing: 0) {
             // Minimalist Brand Header
             HStack(spacing: 10) {
-                Image(systemName: "waveform.path.ecg")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [PulseTheme.accent, PulseTheme.secondaryAccent],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .frame(width: 28, height: 28)
-                    .background(
-                        RoundedRectangle(cornerRadius: 7, style: .continuous)
-                            .fill(PulseTheme.secondaryCard)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 7, style: .continuous)
-                            .strokeBorder(PulseTheme.hairline, lineWidth: 1)
-                    )
+                PulseBrandIcon(size: 28, cornerRadius: 7)
 
                 VStack(alignment: .leading, spacing: 1) {
                     Text("Pulse")

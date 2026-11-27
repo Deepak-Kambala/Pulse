@@ -1,6 +1,46 @@
 import SwiftUI
 import Charts
 
+struct PulseBrandIcon: View {
+    var size: CGFloat = 28
+    var cornerRadius: CGFloat = 7
+
+    var body: some View {
+        Group {
+            if let url = Bundle.main.url(forResource: "PulseLogo", withExtension: "png") ?? Bundle.moduleLogoURL,
+               let nsImage = NSImage(contentsOf: url) {
+                Image(nsImage: nsImage)
+                    .resizable()
+                    .interpolation(.high)
+                    .aspectRatio(contentMode: .fill)
+            } else {
+                Image(systemName: "waveform.path.ecg")
+                    .font(.system(size: size * 0.52, weight: .semibold))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [PulseTheme.accent, PulseTheme.secondaryAccent],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .background(PulseTheme.secondaryCard)
+            }
+        }
+        .frame(width: size, height: size)
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+    }
+}
+
+private extension Bundle {
+    static var moduleLogoURL: URL? {
+        #if SWIFT_PACKAGE
+        return Bundle.module.url(forResource: "PulseLogo", withExtension: "png")
+        #else
+        return nil
+        #endif
+    }
+}
+
 struct PulseCard<Content: View>: View {
     let isInteractive: Bool
     var padding: CGFloat = 16
