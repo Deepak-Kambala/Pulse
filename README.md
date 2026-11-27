@@ -4,17 +4,17 @@ Pulse is a native, local-first macOS system monitoring and diagnostics applicati
 
 ## Features
 
-- **System Overview**: Live 9-card dashboard with device identity, CPU, Memory, GPU, Battery, Thermal, Storage, Network, Top Processes, and Pulse Insights.
-- **CPU Analytics**: Multi-series real-time chart (User / System / Idle) with 1m–6h windows, hover inspection, per-core utilization grid, and top CPU processes.
+- **System Overview**: Single-glance dashboard with Mac identity, CPU, Memory, GPU, Battery, Thermal, Storage, Network, Top Processes, and Pulse Insights.
+- **CPU Analytics**: Multi-series real-time chart (User / System / Idle) with `1m`–`6h` windows, hover inspection, per-core utilization grid, and top CPU processes.
 - **Memory & Leak Watch**: Non-double-counting VM statistics (App, Wired, Compressed, Cached, Swap), real macOS memory pressure (`Normal` / `Warning` / `Critical`), and sustained memory growth detection.
-- **GPU Diagnostics**: Metal device discovery (`MTLCopyAllDevices`) and IOKit `IOAccelerator` statistics where exposed by the driver, with explicit reporting of unavailable metrics.
-- **Battery & Power**: IOKit Power Sources & `AppleSmartBattery` telemetry (charge, cycle count, max capacity %, design capacity, voltage, amperage, historical capacity baseline).
-- **Thermal Monitoring**: `ProcessInfo.thermalState` monitoring with CPU correlation and transparent disclosure of public API boundaries.
-- **Process Explorer**: Searchable, sortable, filterable process manager (`libproc` / `proc_pidinfo`) with inspector drawer, executable path, command line, and protected termination (`SIGTERM` / `SIGKILL`).
-- **Storage & Network**: Mounted volume explorer with low-space warnings, plus `getifaddrs` throughput & interface explorer.
-- **Performance History**: Local SQLite persistence (`~/Library/Application Support/Pulse/pulse.sqlite`) with 5m–7d history and min/avg/peak summaries.
-- **Pulse Insights**: Deterministic anomaly detection rules with evidence, suggested actions, deduplication, Acknowledge, and Dismiss.
-- **Menu Bar Extra**: Configurable live indicators (CPU %, Memory %, Pressure, Battery %, Download/Upload) and lightweight dropdown.
+- **GPU Diagnostics**: Metal device discovery (`MTLCopyAllDevices`) and live `IOAccelerator` utilization % and GPU memory charts.
+- **Battery & Power**: IOKit Power Sources & `AppleSmartBattery` telemetry (charge, hardware cycle count, design vs. max capacity %, voltage, amperage, historical capacity baseline) plus configurable **Min (20%) / Max (80%)** charge alerts with custom audio.
+- **Thermal Monitoring**: `ProcessInfo.thermalState` monitoring with CPU load correlation.
+- **Process Explorer**: Searchable, sortable, filterable process manager (`libproc` / `proc_pidinfo`) with app icons, inspector drawer, executable path, command line, and protected termination (`SIGTERM` / `SIGKILL`).
+- **Storage & Network**: Measured on-disk directory breakdown (`Applications`, `Downloads`, `Documents`, `Developer`, `Caches`, etc.) with **Reveal in Finder**, live IOKit Disk I/O throughput chart, mounted volumes, and `getifaddrs` network throughput & interface explorer.
+- **Performance History**: Local SQLite persistence (`~/Library/Application Support/Pulse/pulse.sqlite`, ~9–11 MB/year at default 7-day retention) with `5m`–`7d` charts and min/avg/peak summaries.
+- **Pulse Insights**: Deterministic anomaly detection rules with supporting evidence, suggested actions, deduplication, Acknowledge, and Dismiss. Only critical/must-see alerts interrupt on screen.
+- **Menu Bar Extra**: Configurable live indicators (`CPU %`, `Memory %`, `Pressure`, `Battery %`, `Download`, `Upload`) and lightweight dropdown.
 
 ## Documentation
 
@@ -23,24 +23,14 @@ Pulse is a native, local-first macOS system monitoring and diagnostics applicati
 
 ## Building & Running
 
-### Option 1: Build `.app` Bundle with SwiftPM (Command Line)
+### Build `.app` Bundle
 
 ```bash
 ./scripts/bundle_app.sh
 open build/Pulse.app
 ```
 
-### Option 2: Open in Xcode
-
-Generate or open `Pulse.xcodeproj`:
-
-```bash
-open Pulse.xcodeproj
-```
-
-Select the **Pulse** scheme and press **Cmd + R**.
-
-### Running Unit Tests
+### Run Unit Tests
 
 ```bash
 swift test
