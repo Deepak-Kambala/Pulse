@@ -101,7 +101,7 @@ struct SettingsView: View {
 
                 // Data & Privacy
                 settingsSection("DATA & PRIVACY") {
-                    KeyValueRow(key: "SQLite Storage", value: "~/Library/Application Support/Pulse/pulse.sqlite")
+                    KeyValueRow(key: "History Database", value: "~/Library/Application Support/Pulse/pulse.sqlite")
                     hairlineDivider
                     HStack {
                         Text("History Retention")
@@ -149,7 +149,7 @@ struct SettingsView: View {
                             Text("Pulse for macOS")
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundStyle(PulseTheme.primaryText)
-                            Text("Version 1.0.0 (Build 1) · Native SwiftUI, Metal, IOKit & Mach APIs")
+                            Text("Version 1.0 · macOS System Monitor")
                                 .font(.system(size: 11.5))
                                 .foregroundStyle(PulseTheme.secondaryText)
                             Text("100% local-first. Zero telemetry.")

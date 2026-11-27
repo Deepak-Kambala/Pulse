@@ -75,7 +75,7 @@ struct PerformanceHistoryView: View {
 
                     // Thermal State History
                     historyChartCard(
-                        title: "Thermal Pressure Level (0=Nominal, 3=Critical)",
+                        title: "Thermal Pressure",
                         values: snapshots.map { ($0.timestamp, Double($0.thermalLevel)) },
                         color: PulseTheme.warning,
                         unitSuffix: "",

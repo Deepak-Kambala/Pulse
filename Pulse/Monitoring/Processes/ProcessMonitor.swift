@@ -65,12 +65,13 @@ final class ProcessMonitor: @unchecked Sendable {
             let pathName = path.map { URL(fileURLWithPath: $0).lastPathComponent }
             let baseName = rawName.isEmpty ? (fallbackComm.isEmpty ? "pid \(pid)" : fallbackComm) : rawName
             // pbi_name is capped at 31 chars on macOS; prefer full executable basename when truncated
-            let processName: String
+            let rawProcessName: String
             if let pathName, !pathName.isEmpty, (rawName.count >= 30 || rawName.isEmpty) {
-                processName = pathName
+                rawProcessName = pathName
             } else {
-                processName = baseName
+                rawProcessName = baseName
             }
+            let processName = Self.readableProcessName(rawProcessName)
             let uid = taskAll.pbsd.pbi_uid
             let userName = resolveUsername(uid: uid)
             let ppid = Int32(taskAll.pbsd.pbi_ppid)
@@ -189,6 +190,14 @@ final class ProcessMonitor: @unchecked Sendable {
         case ESRCH: return .failure(.processNotFound)
         default: return .failure(.failed(String(cString: strerror(errno))))
         }
+    }
+
+    private static func readableProcessName(_ name: String) -> String {
+        if name.hasPrefix("com.apple.") {
+            let trimmed = String(name.dropFirst("com.apple.".count))
+            return trimmed.replacingOccurrences(of: ".", with: " ")
+        }
+        return name
     }
 
     private func readPath(pid: Int32) -> String? {

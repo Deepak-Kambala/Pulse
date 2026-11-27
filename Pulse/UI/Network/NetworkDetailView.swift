@@ -68,21 +68,23 @@ struct NetworkDetailView: View {
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(PulseTheme.primaryText)
 
-                        ForEach(monitor.network.interfaces) { iface in
+                        ForEach(monitor.network.interfaces.filter { $0.isUp || $0.bytesReceived > 0 || $0.bytesSent > 0 }) { iface in
                             HStack(spacing: 12) {
                                 VStack(alignment: .leading, spacing: 2) {
                                     HStack(spacing: 6) {
-                                        Text(iface.name)
-                                            .font(.system(size: 12, weight: .semibold, design: .monospaced))
-                                            .foregroundStyle(PulseTheme.primaryText)
                                         Text(iface.kind)
-                                            .font(.system(size: 11))
-                                            .foregroundStyle(PulseTheme.secondaryText)
+                                            .font(.system(size: 12.5, weight: .semibold))
+                                            .foregroundStyle(PulseTheme.primaryText)
+                                        Text(iface.name)
+                                            .font(.system(size: 11, design: .monospaced))
+                                            .foregroundStyle(PulseTheme.tertiaryText)
                                     }
-                                    Text("IPv4: \(iface.ipv4Address ?? "—") · IPv6: \(iface.ipv6Address ?? "—")")
-                                        .font(.system(size: 10, design: .monospaced))
-                                        .foregroundStyle(PulseTheme.secondaryText)
-                                        .lineLimit(1)
+                                    if iface.ipv4Address != nil || iface.ipv6Address != nil {
+                                        Text("IPv4: \(iface.ipv4Address ?? "—") · IPv6: \(iface.ipv6Address ?? "—")")
+                                            .font(.system(size: 10, design: .monospaced))
+                                            .foregroundStyle(PulseTheme.secondaryText)
+                                            .lineLimit(1)
+                                    }
                                 }
                                 Spacer()
                                 VStack(alignment: .trailing, spacing: 2) {

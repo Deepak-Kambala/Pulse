@@ -47,7 +47,6 @@ struct GPUDetailView: View {
                                 ])
 
                                 Divider().overlay(PulseTheme.border)
-                                KeyValueRow(key: "Registry ID", value: String(format: "0x%llX", device.id))
                                 KeyValueRow(key: "Low Power", value: device.isLowPower ? "Yes" : "No")
                                 KeyValueRow(key: "Headless", value: device.isHeadless ? "Yes" : "No")
                                 KeyValueRow(key: "Pulse Metal Allocated", value: PulseFormat.bytes(device.currentAllocatedBytes))

@@ -54,13 +54,12 @@ final class SystemIdentityMonitor: Sendable {
     }
 
     private func friendlyModelName(_ identifier: String) -> String {
-        if identifier.hasPrefix("MacBookPro") { return "MacBook Pro (\(identifier))" }
-        if identifier.hasPrefix("MacBookAir") { return "MacBook Air (\(identifier))" }
-        if identifier.hasPrefix("Macmini") { return "Mac mini (\(identifier))" }
-        if identifier.hasPrefix("MacStudio") { return "Mac Studio (\(identifier))" }
-        if identifier.hasPrefix("MacPro") { return "Mac Pro (\(identifier))" }
-        if identifier.hasPrefix("iMac") { return "iMac (\(identifier))" }
-        if identifier.hasPrefix("Mac") { return "Mac (\(identifier))" }
-        return identifier
+        if identifier.hasPrefix("MacBookPro") { return "MacBook Pro" }
+        if identifier.hasPrefix("MacBookAir") { return "MacBook Air" }
+        if identifier.hasPrefix("Macmini") { return "Mac mini" }
+        if identifier.hasPrefix("MacStudio") { return "Mac Studio" }
+        if identifier.hasPrefix("MacPro") { return "Mac Pro" }
+        if identifier.hasPrefix("iMac") { return "iMac" }
+        return "Mac"
     }
 }
