@@ -80,26 +80,16 @@ struct StatusPill: View {
 
     var body: some View {
         let color = PulseTheme.color(for: status)
-        HStack(spacing: 5) {
+        HStack(spacing: 6) {
             Circle()
                 .fill(color)
                 .frame(width: 6, height: 6)
             Text(customLabel ?? status.label)
-                .font(.system(size: 11, weight: .medium))
+                .font(.system(size: 11.5, weight: .medium))
+                .foregroundStyle(status == .neutral ? PulseTheme.tertiaryText : PulseTheme.secondaryText)
                 .lineLimit(1)
         }
         .fixedSize(horizontal: true, vertical: true)
-        .foregroundStyle(color)
-        .padding(.horizontal, 9)
-        .padding(.vertical, 4)
-        .background(
-            Capsule(style: .continuous)
-                .fill(color.opacity(0.10))
-        )
-        .overlay(
-            Capsule(style: .continuous)
-                .strokeBorder(color.opacity(0.20), lineWidth: 0.5)
-        )
     }
 }
 
