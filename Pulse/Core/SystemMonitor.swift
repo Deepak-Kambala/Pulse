@@ -18,6 +18,8 @@ final class SystemMonitor: ObservableObject {
     @Published private(set) var battery: BatteryMetrics = .noBattery
     @Published private(set) var thermal: ThermalMetrics = .initial
     @Published private(set) var storage: StorageMetrics = .empty
+    @Published private(set) var storageBreakdown: [StorageCategoryUsage] = []
+    @Published private(set) var isScanningStorage: Bool = false
     @Published private(set) var network: NetworkMetrics = .empty
     @Published private(set) var processes: [ProcessInfoModel] = []
     @Published private(set) var memoryGrowthCandidates: [MemoryGrowthCandidate] = []
@@ -28,6 +30,7 @@ final class SystemMonitor: ObservableObject {
     @Published private(set) var batteryHistory: [BatterySample] = []
     @Published private(set) var thermalHistory: [ThermalSample] = []
     @Published private(set) var networkHistory: [NetworkSample] = []
+    @Published private(set) var diskIOHistory: [DiskIOSample] = []
 
     // Insights
     @Published var insights: [InsightItem] = []
@@ -83,6 +86,18 @@ final class SystemMonitor: ObservableObject {
         }
     }
 
+    func scanStorageBreakdown() {
+        guard !isScanningStorage else { return }
+        isScanningStorage = true
+        Task.detached(priority: .utility) {
+            let breakdown = StorageMonitor.scanDirectoryBreakdown()
+            await MainActor.run {
+                self.storageBreakdown = breakdown
+                self.isScanningStorage = false
+            }
+        }
+    }
+
     func terminateProcess(_ process: ProcessInfoModel, force: Bool) -> Result<Void, ProcessControlError> {
         let res = processMonitor.terminate(pid: process.pid, force: force)
         if case .success = res {
@@ -132,7 +147,7 @@ final class SystemMonitor: ObservableObject {
         let doBat = settings.monitorBattery && (forceAll || tickCount % max(1, Int(settings.batteryInterval / 2.0)) == 0)
         let doGPU = settings.monitorGPU && (forceAll || tickCount % 2 == 0)
         let doThermal = settings.monitorThermal
-        let doStorage = settings.monitorStorage && (forceAll || tickCount % 15 == 0)
+        let doStorage = settings.monitorStorage
         let doProcs = settings.monitorProcesses && (forceAll || tickCount % 2 == 0)
 
         let physMem = identity.physicalMemoryBytes
@@ -194,7 +209,11 @@ final class SystemMonitor: ObservableObject {
             thermalHistory.append(ThermalSample(timestamp: t.timestamp, state: t.state, cpuUsageAtTime: self.cpu.totalUsage))
             trimHistory(&thermalHistory, maxAge: 6 * 3600)
         }
-        if let s = collected.6 { self.storage = s }
+        if let s = collected.6 {
+            self.storage = s
+            diskIOHistory.append(DiskIOSample(timestamp: s.timestamp, readBytesPerSec: s.diskReadBytesPerSec, writeBytesPerSec: s.diskWriteBytesPerSec))
+            trimHistory(&diskIOHistory, maxAge: 6 * 3600)
+        }
         if let n = collected.7 {
             self.network = n
             networkHistory.append(NetworkSample(timestamp: n.timestamp, downloadBytesPerSec: n.downloadBytesPerSec, uploadBytesPerSec: n.uploadBytesPerSec))

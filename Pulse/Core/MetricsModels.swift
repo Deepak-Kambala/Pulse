@@ -447,15 +447,41 @@ struct VolumeInfo: Identifiable, Sendable, Equatable {
     }
 }
 
+struct StorageCategoryUsage: Identifiable, Sendable, Equatable {
+    let id: String
+    let name: String
+    let path: String
+    let bytes: UInt64
+    let symbolName: String
+}
+
+struct DiskIOSample: Identifiable, Sendable {
+    let id = UUID()
+    let timestamp: Date
+    let readBytesPerSec: Double
+    let writeBytesPerSec: Double
+}
+
 struct StorageMetrics: Sendable, Equatable {
     let timestamp: Date
     let volumes: [VolumeInfo]
+    let diskReadBytesPerSec: Double
+    let diskWriteBytesPerSec: Double
+    let totalDiskBytesRead: UInt64
+    let totalDiskBytesWritten: UInt64
 
     var primaryVolume: VolumeInfo? {
         volumes.first(where: { $0.mountPoint == "/" }) ?? volumes.first
     }
 
-    static let empty = StorageMetrics(timestamp: Date(), volumes: [])
+    static let empty = StorageMetrics(
+        timestamp: Date(),
+        volumes: [],
+        diskReadBytesPerSec: 0,
+        diskWriteBytesPerSec: 0,
+        totalDiskBytesRead: 0,
+        totalDiskBytesWritten: 0
+    )
 }
 
 // MARK: - Network
