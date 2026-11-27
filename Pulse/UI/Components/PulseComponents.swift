@@ -397,6 +397,7 @@ struct PulseDropdown<T: Hashable>: View {
     let label: String?
     let options: [(value: T, label: String)]
     @Binding var selection: T
+    @State private var isOpen = false
 
     init(label: String? = nil, options: [(value: T, label: String)], selection: Binding<T>) {
         self.label = label
@@ -409,18 +410,8 @@ struct PulseDropdown<T: Hashable>: View {
     }
 
     var body: some View {
-        Menu {
-            ForEach(Array(options.enumerated()), id: \.offset) { _, option in
-                Button {
-                    selection = option.value
-                } label: {
-                    if selection == option.value {
-                        Label(option.label, systemImage: "checkmark")
-                    } else {
-                        Text(option.label)
-                    }
-                }
-            }
+        Button {
+            isOpen.toggle()
         } label: {
             HStack(spacing: 8) {
                 if let label {
@@ -431,11 +422,13 @@ struct PulseDropdown<T: Hashable>: View {
                 Text(currentLabel)
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(PulseTheme.primaryText)
-                Image(systemName: "chevron.up.chevron.down")
+                Image(systemName: "chevron.down")
                     .font(.system(size: 9.5, weight: .semibold))
                     .foregroundStyle(PulseTheme.secondaryText)
+                    .rotationEffect(.degrees(isOpen ? 180 : 0))
+                    .animation(.easeOut(duration: 0.15), value: isOpen)
             }
-            .padding(.horizontal, 10)
+            .padding(.horizontal, 11)
             .padding(.vertical, 6)
             .background(
                 RoundedRectangle(cornerRadius: 7, style: .continuous)
@@ -443,10 +436,58 @@ struct PulseDropdown<T: Hashable>: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 7, style: .continuous)
-                    .strokeBorder(PulseTheme.hairline, lineWidth: 1)
+                    .strokeBorder(isOpen ? PulseTheme.accent.opacity(0.45) : PulseTheme.hairline, lineWidth: 1)
             )
         }
-        .menuStyle(.borderlessButton)
+        .buttonStyle(.plain)
         .fixedSize()
+        .popover(isPresented: $isOpen, arrowEdge: .bottom) {
+            VStack(alignment: .leading, spacing: 2) {
+                ForEach(Array(options.enumerated()), id: \.offset) { _, option in
+                    PulseDropdownOptionRow(
+                        title: option.label,
+                        isSelected: selection == option.value
+                    ) {
+                        selection = option.value
+                        isOpen = false
+                    }
+                }
+            }
+            .padding(6)
+            .frame(minWidth: 160)
+            .background(PulseTheme.card)
+        }
+    }
+}
+
+private struct PulseDropdownOptionRow: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+    @State private var isHovered = false
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                Text(title)
+                    .font(.system(size: 12, weight: isSelected ? .medium : .regular))
+                    .foregroundStyle(isSelected ? PulseTheme.primaryText : PulseTheme.secondaryText)
+                Spacer(minLength: 16)
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 10.5, weight: .semibold))
+                        .foregroundStyle(PulseTheme.accent)
+                }
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .fill(isHovered || isSelected ? PulseTheme.secondaryCard : Color.clear)
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovered = $0 }
     }
 }
