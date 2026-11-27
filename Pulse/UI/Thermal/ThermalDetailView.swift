@@ -9,7 +9,7 @@ struct ThermalDetailView: View {
             VStack(alignment: .leading, spacing: 16) {
                 SectionHeader(
                     title: "Thermal",
-                    subtitle: "System thermal pressure"
+                    subtitle: monitor.thermal.state.summaryDescription
                 ) {
                     StatusPill(status: monitor.thermal.state.status, customLabel: monitor.thermal.state.rawValue)
                 }
@@ -49,20 +49,6 @@ struct ThermalDetailView: View {
                             .chartYScale(domain: 0...100)
                             .frame(height: 180)
                         }
-                    }
-                }
-
-                PulseCard {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Sensor Availability & Diagnostics")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(PulseTheme.primaryText)
-                        Text(monitor.thermal.state.summaryDescription)
-                            .font(.system(size: 12))
-                            .foregroundStyle(PulseTheme.primaryText)
-                        Text(monitor.thermal.sensorAvailabilityNote)
-                            .font(.system(size: 11))
-                            .foregroundStyle(PulseTheme.secondaryText)
                     }
                 }
             }
