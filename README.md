@@ -23,7 +23,18 @@ Pulse is a native, local-first macOS system monitoring and diagnostics applicati
 
 ## Building & Running
 
-### Build `.app` Bundle
+### Option 1: Download Prebuilt DMG (Apple Silicon, macOS 14+)
+
+1. Download `Pulse-1.0.0-macOS-arm64.dmg` from [GitHub Releases](https://github.com/Deepak-Kambala/Pulse/releases/latest).
+2. Open the `.dmg` and drag **Pulse.app** into **Applications**.
+3. On first launch, if macOS shows *"Apple could not verify Pulse"*:
+   - Click **Done**, open **System Settings → Privacy & Security**, scroll down, and click **Open Anyway**, **or**
+   - Run in Terminal:
+     ```bash
+     xattr -cr /Applications/Pulse.app && open /Applications/Pulse.app
+     ```
+
+### Option 2: Build `.app` Bundle from Source
 
 ```bash
 ./scripts/bundle_app.sh
