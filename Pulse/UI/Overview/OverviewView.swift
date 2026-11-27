@@ -43,21 +43,15 @@ struct OverviewView: View {
                     .foregroundStyle(PulseTheme.secondaryText)
             }
             Spacer()
-            HStack(spacing: 16) {
-                VStack(alignment: .trailing, spacing: 1) {
-                    Text("UPTIME")
-                        .font(.system(size: 9.5, weight: .semibold))
-                        .tracking(0.5)
-                        .foregroundStyle(PulseTheme.tertiaryText)
-                    Text(PulseFormat.uptime(monitor.identity.uptimeSeconds))
-                        .font(.system(size: 12.5, weight: .medium))
-                        .monospacedDigit()
-                        .foregroundStyle(PulseTheme.primaryText)
-                }
-                StatusPill(
-                    status: monitor.isMonitoring ? .healthy : .neutral,
-                    customLabel: monitor.isMonitoring ? "Live" : "Paused"
-                )
+            VStack(alignment: .trailing, spacing: 1) {
+                Text("UPTIME")
+                    .font(.system(size: 9.5, weight: .semibold))
+                    .tracking(0.5)
+                    .foregroundStyle(PulseTheme.tertiaryText)
+                Text(PulseFormat.uptime(monitor.identity.uptimeSeconds))
+                    .font(.system(size: 12.5, weight: .medium))
+                    .monospacedDigit()
+                    .foregroundStyle(PulseTheme.primaryText)
             }
         }
         .padding(.bottom, 4)
