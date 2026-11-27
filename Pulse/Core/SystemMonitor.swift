@@ -52,6 +52,8 @@ final class SystemMonitor: ObservableObject {
     private var tickCount: Int = 0
     private var lastSnapshotSave: Date = .distantPast
     private var lastBatteryCapacityLog: Date = .distantPast
+    private var didAlertLowBattery: Bool = false
+    private var didAlertMaxBattery: Bool = false
     private var thermalObserver: NSObjectProtocol?
 
     private init() {
@@ -318,12 +320,36 @@ final class SystemMonitor: ObservableObject {
                 body: "Only \(PulseFormat.decimalBytes(primary.availableBytes)) remaining."
             )
         }
-        if settings.notifyLowBattery && battery.hasBattery && !battery.externalConnected && battery.percentage <= 15 {
-            NotificationsManager.shared.sendIfAllowed(
-                key: "low_battery",
-                title: "Low Battery (\(PulseFormat.percent(battery.percentage)))",
-                body: "Connect your Mac to a power adapter."
-            )
+        if battery.hasBattery {
+            if !battery.externalConnected && battery.percentage <= settings.lowBatteryThreshold {
+                if settings.notifyLowBattery && !didAlertLowBattery {
+                    didAlertLowBattery = true
+                    NotificationsManager.shared.sendIfAllowed(
+                        key: "low_battery",
+                        title: "Low Battery (\(PulseFormat.percent(battery.percentage)))",
+                        body: "Battery reached \(Int(settings.lowBatteryThreshold))% minimum threshold. Connect your Mac to power.",
+                        soundName: "low",
+                        bypassCooldown: true
+                    )
+                }
+            } else if battery.externalConnected || battery.percentage >= settings.lowBatteryThreshold + 3 {
+                didAlertLowBattery = false
+            }
+
+            if battery.externalConnected && (battery.isCharging || battery.isCharged) && battery.percentage >= settings.maxBatteryThreshold {
+                if settings.notifyMaxBattery && !didAlertMaxBattery {
+                    didAlertMaxBattery = true
+                    NotificationsManager.shared.sendIfAllowed(
+                        key: "max_battery",
+                        title: "Max Battery Reached (\(PulseFormat.percent(battery.percentage)))",
+                        body: "Battery reached \(Int(settings.maxBatteryThreshold))% target. You can unplug your charger.",
+                        soundName: "max",
+                        bypassCooldown: true
+                    )
+                }
+            } else if !battery.externalConnected || battery.percentage <= settings.maxBatteryThreshold - 3 {
+                didAlertMaxBattery = false
+            }
         }
     }
 

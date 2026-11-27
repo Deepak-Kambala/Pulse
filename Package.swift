@@ -19,7 +19,9 @@ let package = Package(
             ],
             resources: [
                 .copy("Resources/AppIcon.icns"),
-                .copy("Resources/PulseLogo.png")
+                .copy("Resources/PulseLogo.png"),
+                .copy("Resources/max.mp3"),
+                .copy("Resources/low.mp3")
             ],
             swiftSettings: [
                 .swiftLanguageMode(.v5)

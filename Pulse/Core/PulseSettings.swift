@@ -95,6 +95,9 @@ final class PulseSettings: ObservableObject {
     @Published var lowStorageThresholdPercent: Double { didSet { defaults.set(lowStorageThresholdPercent, forKey: "lowStorageThresholdPercent") } }
     @Published var notifyThermalWarning: Bool { didSet { defaults.set(notifyThermalWarning, forKey: "notifyThermalWarning") } }
     @Published var notifyLowBattery: Bool { didSet { defaults.set(notifyLowBattery, forKey: "notifyLowBattery") } }
+    @Published var lowBatteryThreshold: Double { didSet { defaults.set(lowBatteryThreshold, forKey: "lowBatteryThreshold") } }
+    @Published var notifyMaxBattery: Bool { didSet { defaults.set(notifyMaxBattery, forKey: "notifyMaxBattery") } }
+    @Published var maxBatteryThreshold: Double { didSet { defaults.set(maxBatteryThreshold, forKey: "maxBatteryThreshold") } }
 
     private init() {
         self.launchAtLogin = defaults.bool(forKey: "launchAtLogin")
@@ -134,6 +137,9 @@ final class PulseSettings: ObservableObject {
         self.lowStorageThresholdPercent = defaults.object(forKey: "lowStorageThresholdPercent") as? Double ?? 15.0
         self.notifyThermalWarning = defaults.object(forKey: "notifyThermalWarning") as? Bool ?? true
         self.notifyLowBattery = defaults.object(forKey: "notifyLowBattery") as? Bool ?? true
+        self.lowBatteryThreshold = defaults.object(forKey: "lowBatteryThreshold") as? Double ?? 20.0
+        self.notifyMaxBattery = defaults.object(forKey: "notifyMaxBattery") as? Bool ?? true
+        self.maxBatteryThreshold = defaults.object(forKey: "maxBatteryThreshold") as? Double ?? 80.0
     }
 
     func applyAppearance() {
@@ -191,5 +197,8 @@ final class PulseSettings: ObservableObject {
         lowStorageThresholdPercent = 15.0
         notifyThermalWarning = true
         notifyLowBattery = true
+        lowBatteryThreshold = 20.0
+        notifyMaxBattery = true
+        maxBatteryThreshold = 80.0
     }
 }

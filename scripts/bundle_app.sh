@@ -23,6 +23,8 @@ cp "$BIN_PATH" "$APP_DIR/Contents/MacOS/Pulse"
 cp "$ROOT_DIR/Pulse/Resources/Info.plist" "$APP_DIR/Contents/Info.plist"
 cp "$ROOT_DIR/Pulse/Resources/AppIcon.icns" "$APP_DIR/Contents/Resources/AppIcon.icns"
 cp "$ROOT_DIR/Pulse/Resources/PulseLogo.png" "$APP_DIR/Contents/Resources/PulseLogo.png"
+cp "$ROOT_DIR/Pulse/Resources/max.mp3" "$APP_DIR/Contents/Resources/max.mp3"
+cp "$ROOT_DIR/Pulse/Resources/low.mp3" "$APP_DIR/Contents/Resources/low.mp3"
 
 # Ad-hoc sign so macOS Gatekeeper / notifications / LaunchServices treat it cleanly
 codesign --force --deep --sign - "$APP_DIR" 2>/dev/null || true

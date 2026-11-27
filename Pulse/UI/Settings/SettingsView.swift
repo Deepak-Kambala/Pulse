@@ -96,7 +96,33 @@ struct SettingsView: View {
                     hairlineDivider
                     switchRow("Thermal warning alert", isOn: $settings.notifyThermalWarning)
                     hairlineDivider
-                    switchRow("Low battery alert", isOn: $settings.notifyLowBattery)
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            switchRow("Min battery alert (≤ \(Int(settings.lowBatteryThreshold))%)", isOn: $settings.notifyLowBattery)
+                            Button("Test") {
+                                NotificationsManager.shared.playSound(named: "low")
+                            }
+                            .buttonStyle(.plain)
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(PulseTheme.accent)
+                        }
+                        Slider(value: $settings.lowBatteryThreshold, in: 5...50, step: 1)
+                            .tint(PulseTheme.accent)
+                    }
+                    hairlineDivider
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            switchRow("Max battery alert (≥ \(Int(settings.maxBatteryThreshold))%)", isOn: $settings.notifyMaxBattery)
+                            Button("Test") {
+                                NotificationsManager.shared.playSound(named: "max")
+                            }
+                            .buttonStyle(.plain)
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(PulseTheme.accent)
+                        }
+                        Slider(value: $settings.maxBatteryThreshold, in: 50...100, step: 1)
+                            .tint(PulseTheme.accent)
+                    }
                 }
 
                 // Data & Privacy
