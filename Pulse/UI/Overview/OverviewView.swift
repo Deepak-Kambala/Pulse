@@ -32,34 +32,35 @@ struct OverviewView: View {
     }
 
     private var headerBanner: some View {
-        PulseCard {
-            HStack(alignment: .center, spacing: 16) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("System Overview")
-                        .font(.system(size: 20, weight: .semibold))
+        HStack(alignment: .center, spacing: 16) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text("System Overview")
+                    .font(.system(size: 20, weight: .semibold))
+                    .tracking(-0.3)
+                    .foregroundStyle(PulseTheme.primaryText)
+                Text("\(monitor.identity.deviceModel) · \(monitor.identity.chipName) · \(monitor.identity.osVersion)")
+                    .font(.system(size: 12))
+                    .foregroundStyle(PulseTheme.secondaryText)
+            }
+            Spacer()
+            HStack(spacing: 16) {
+                VStack(alignment: .trailing, spacing: 1) {
+                    Text("UPTIME")
+                        .font(.system(size: 9.5, weight: .semibold))
+                        .tracking(0.5)
+                        .foregroundStyle(PulseTheme.tertiaryText)
+                    Text(PulseFormat.uptime(monitor.identity.uptimeSeconds))
+                        .font(.system(size: 12.5, weight: .medium))
+                        .monospacedDigit()
                         .foregroundStyle(PulseTheme.primaryText)
-                    Text("\(monitor.identity.deviceModel) · \(monitor.identity.chipName) · \(monitor.identity.osVersion)")
-                        .font(.system(size: 12))
-                        .foregroundStyle(PulseTheme.secondaryText)
                 }
-                Spacer()
-                HStack(spacing: 18) {
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text("Uptime")
-                            .font(.system(size: 10))
-                            .foregroundStyle(PulseTheme.secondaryText)
-                        Text(PulseFormat.uptime(monitor.identity.uptimeSeconds))
-                            .font(.system(size: 13, weight: .medium))
-                            .monospacedDigit()
-                            .foregroundStyle(PulseTheme.primaryText)
-                    }
-                    StatusPill(
-                        status: monitor.isMonitoring ? .healthy : .neutral,
-                        customLabel: monitor.isMonitoring ? "Live" : "Paused"
-                    )
-                }
+                StatusPill(
+                    status: monitor.isMonitoring ? .healthy : .neutral,
+                    customLabel: monitor.isMonitoring ? "Live" : "Paused"
+                )
             }
         }
+        .padding(.bottom, 4)
     }
 
     private var cpuCard: some View {

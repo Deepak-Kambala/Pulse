@@ -14,12 +14,12 @@ struct ThermalDetailView: View {
                     StatusPill(status: monitor.thermal.state.status, customLabel: monitor.thermal.state.rawValue)
                 }
 
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 180), spacing: 12)], spacing: 12) {
-                    PulseStatTile(title: "Thermal State", value: monitor.thermal.state.rawValue, subtitle: "ProcessInfo.thermalState", status: monitor.thermal.state.status)
-                    PulseStatTile(title: "CPU Temperature", value: monitor.thermal.cpuTemperatureCelsius.map { String(format: "%.1f °C", $0) } ?? "Unavailable", subtitle: "Requires private SMC", status: .neutral)
-                    PulseStatTile(title: "GPU Temperature", value: monitor.thermal.gpuTemperatureCelsius.map { String(format: "%.1f °C", $0) } ?? "Unavailable", subtitle: "Requires private SMC", status: .neutral)
-                    PulseStatTile(title: "Fan Speed", value: monitor.thermal.fanSpeedRPM.map { "\($0) RPM" } ?? "Unavailable", subtitle: "Requires private SMC", status: .neutral)
-                }
+                MetricStrip(items: [
+                    MetricStripItem(label: "Thermal State", value: monitor.thermal.state.rawValue, detail: "ProcessInfo.thermalState", status: monitor.thermal.state.status),
+                    MetricStripItem(label: "CPU Temp", value: monitor.thermal.cpuTemperatureCelsius.map { String(format: "%.1f °C", $0) } ?? "Unavailable", detail: "Requires private SMC", status: .neutral),
+                    MetricStripItem(label: "GPU Temp", value: monitor.thermal.gpuTemperatureCelsius.map { String(format: "%.1f °C", $0) } ?? "Unavailable", detail: "Requires private SMC", status: .neutral),
+                    MetricStripItem(label: "Fan Speed", value: monitor.thermal.fanSpeedRPM.map { "\($0) RPM" } ?? "Unavailable", detail: "Requires private SMC", status: .neutral)
+                ])
 
                 PulseCard {
                     VStack(alignment: .leading, spacing: 10) {

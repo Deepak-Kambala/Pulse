@@ -14,13 +14,13 @@ struct NetworkDetailView: View {
                     StatusPill(status: monitor.network.activeInterfacesCount > 0 ? .healthy : .neutral, customLabel: "\(monitor.network.activeInterfacesCount) Active")
                 }
 
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), spacing: 12)], spacing: 12) {
-                    PulseStatTile(title: "Download Speed", value: PulseFormat.speed(monitor.network.downloadBytesPerSec))
-                    PulseStatTile(title: "Upload Speed", value: PulseFormat.speed(monitor.network.uploadBytesPerSec))
-                    PulseStatTile(title: "Total Received", value: PulseFormat.bytes(monitor.network.totalBytesReceived))
-                    PulseStatTile(title: "Total Sent", value: PulseFormat.bytes(monitor.network.totalBytesSent))
-                    PulseStatTile(title: "Active Interfaces", value: "\(monitor.network.activeInterfacesCount)")
-                }
+                MetricStrip(items: [
+                    MetricStripItem(label: "Download", value: PulseFormat.speed(monitor.network.downloadBytesPerSec)),
+                    MetricStripItem(label: "Upload", value: PulseFormat.speed(monitor.network.uploadBytesPerSec)),
+                    MetricStripItem(label: "Received", value: PulseFormat.bytes(monitor.network.totalBytesReceived)),
+                    MetricStripItem(label: "Sent", value: PulseFormat.bytes(monitor.network.totalBytesSent)),
+                    MetricStripItem(label: "Interfaces", value: "\(monitor.network.activeInterfacesCount) Active")
+                ])
 
                 PulseCard {
                     VStack(alignment: .leading, spacing: 10) {

@@ -14,15 +14,15 @@ struct MemoryDetailView: View {
                     StatusPill(status: monitor.memory.pressureLevel.status, customLabel: "Pressure: \(monitor.memory.pressureLevel.rawValue)")
                 }
 
-                // 6 Summary Cards
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 165), spacing: 12)], spacing: 12) {
-                    PulseStatTile(title: "Physical Memory", value: PulseFormat.bytes(monitor.memory.physicalBytes, decimals: 0))
-                    PulseStatTile(title: "Used Memory", value: PulseFormat.bytes(monitor.memory.usedBytes), subtitle: PulseFormat.percent(monitor.memory.usedPercentage, decimals: 1))
-                    PulseStatTile(title: "Available", value: PulseFormat.bytes(monitor.memory.availableBytes))
-                    PulseStatTile(title: "Pressure", value: monitor.memory.pressureLevel.rawValue, status: monitor.memory.pressureLevel.status)
-                    PulseStatTile(title: "Compressed", value: PulseFormat.bytes(monitor.memory.compressedBytes))
-                    PulseStatTile(title: "Swap Used", value: PulseFormat.bytes(monitor.memory.swapUsedBytes), subtitle: "of \(PulseFormat.bytes(monitor.memory.swapTotalBytes))")
-                }
+                // Unified 6-column Metric Strip (no orphan card)
+                MetricStrip(items: [
+                    MetricStripItem(label: "Physical", value: PulseFormat.bytes(monitor.memory.physicalBytes, decimals: 0)),
+                    MetricStripItem(label: "Used", value: PulseFormat.bytes(monitor.memory.usedBytes), detail: PulseFormat.percent(monitor.memory.usedPercentage, decimals: 1)),
+                    MetricStripItem(label: "Available", value: PulseFormat.bytes(monitor.memory.availableBytes)),
+                    MetricStripItem(label: "Pressure", value: monitor.memory.pressureLevel.rawValue, status: monitor.memory.pressureLevel.status),
+                    MetricStripItem(label: "Compressed", value: PulseFormat.bytes(monitor.memory.compressedBytes)),
+                    MetricStripItem(label: "Swap Used", value: PulseFormat.bytes(monitor.memory.swapUsedBytes), detail: "of \(PulseFormat.bytes(monitor.memory.swapTotalBytes))")
+                ])
 
                 // Memory Composition
                 PulseCard {

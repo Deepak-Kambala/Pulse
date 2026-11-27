@@ -3,29 +3,31 @@ import Charts
 
 struct PulseCard<Content: View>: View {
     let isInteractive: Bool
+    var padding: CGFloat = 16
     @ViewBuilder let content: Content
     @State private var isHovered = false
 
-    init(isInteractive: Bool = false, @ViewBuilder content: () -> Content) {
+    init(isInteractive: Bool = false, padding: CGFloat = 16, @ViewBuilder content: () -> Content) {
         self.isInteractive = isInteractive
+        self.padding = padding
         self.content = content()
     }
 
     var body: some View {
         content
-            .padding(16)
+            .padding(padding)
             .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .fill(PulseTheme.card)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .strokeBorder(
-                        isInteractive && isHovered ? PulseTheme.accent.opacity(0.45) : PulseTheme.border,
+                        isInteractive && isHovered ? PulseTheme.accent.opacity(0.4) : PulseTheme.hairline,
                         lineWidth: 1
                     )
             )
-            .animation(.easeOut(duration: 0.15), value: isHovered)
+            .animation(.easeOut(duration: 0.14), value: isHovered)
             .onHover { hovering in
                 if isInteractive { isHovered = hovering }
             }
@@ -39,22 +41,83 @@ struct StatusPill: View {
     var body: some View {
         let color = PulseTheme.color(for: status)
         HStack(spacing: 5) {
-            Image(systemName: status.symbolName)
-                .font(.system(size: 10, weight: .semibold))
+            Circle()
+                .fill(color)
+                .frame(width: 6, height: 6)
             Text(customLabel ?? status.label)
                 .font(.system(size: 11, weight: .medium))
+                .lineLimit(1)
         }
+        .fixedSize(horizontal: true, vertical: true)
         .foregroundStyle(color)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 3)
+        .padding(.horizontal, 9)
+        .padding(.vertical, 4)
         .background(
             Capsule(style: .continuous)
-                .fill(color.opacity(0.12))
+                .fill(color.opacity(0.10))
         )
         .overlay(
             Capsule(style: .continuous)
-                .strokeBorder(color.opacity(0.25), lineWidth: 0.5)
+                .strokeBorder(color.opacity(0.20), lineWidth: 0.5)
         )
+    }
+}
+
+struct MetricStripItem: Identifiable {
+    let id = UUID()
+    let label: String
+    let value: String
+    var detail: String? = nil
+    var status: HealthStatus? = nil
+}
+
+struct MetricStrip: View {
+    let items: [MetricStripItem]
+
+    var body: some View {
+        PulseCard(padding: 0) {
+            HStack(spacing: 0) {
+                ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                    if index > 0 {
+                        Rectangle()
+                            .fill(PulseTheme.hairline)
+                            .frame(width: 1)
+                            .padding(.vertical, 14)
+                    }
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text(item.label.uppercased())
+                            .font(.system(size: 10, weight: .semibold))
+                            .tracking(0.5)
+                            .foregroundStyle(PulseTheme.secondaryText)
+                            .lineLimit(1)
+
+                        HStack(spacing: 6) {
+                            if let status = item.status {
+                                Circle()
+                                    .fill(PulseTheme.color(for: status))
+                                    .frame(width: 7, height: 7)
+                            }
+                            Text(item.value)
+                                .font(.system(size: 21, weight: .semibold, design: .rounded))
+                                .monospacedDigit()
+                                .foregroundStyle(PulseTheme.primaryText)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.75)
+                        }
+
+                        if let detail = item.detail {
+                            Text(detail)
+                                .font(.system(size: 11))
+                                .foregroundStyle(PulseTheme.tertiaryText)
+                                .lineLimit(1)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                }
+            }
+        }
     }
 }
 
@@ -72,19 +135,23 @@ struct PulseStatTile: View {
     }
 
     var body: some View {
-        PulseCard {
-            VStack(alignment: .leading, spacing: 6) {
-                HStack {
-                    Text(title)
-                        .font(.system(size: 11, weight: .medium))
+        PulseCard(padding: 14) {
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 6) {
+                    Text(title.uppercased())
+                        .font(.system(size: 10, weight: .semibold))
+                        .tracking(0.5)
                         .foregroundStyle(PulseTheme.secondaryText)
-                    Spacer()
+                        .lineLimit(1)
+                    Spacer(minLength: 4)
                     if let status {
-                        StatusPill(status: status)
+                        Circle()
+                            .fill(PulseTheme.color(for: status))
+                            .frame(width: 7, height: 7)
                     }
                 }
                 Text(value)
-                    .font(.system(size: 22, weight: .semibold, design: .rounded))
+                    .font(.system(size: 21, weight: .semibold, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(PulseTheme.primaryText)
                     .lineLimit(1)
@@ -92,7 +159,7 @@ struct PulseStatTile: View {
                 if let subtitle {
                     Text(subtitle)
                         .font(.system(size: 11))
-                        .foregroundStyle(PulseTheme.secondaryText)
+                        .foregroundStyle(PulseTheme.tertiaryText)
                         .lineLimit(1)
                 }
             }
@@ -114,9 +181,10 @@ struct SectionHeader<Trailing: View>: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.system(size: 20, weight: .semibold))
+                    .tracking(-0.3)
                     .foregroundStyle(PulseTheme.primaryText)
                 Text(subtitle)
                     .font(.system(size: 12))
@@ -125,7 +193,7 @@ struct SectionHeader<Trailing: View>: View {
             Spacer()
             trailing
         }
-        .padding(.bottom, 4)
+        .padding(.bottom, 2)
     }
 }
 
@@ -143,11 +211,11 @@ struct SparklineChart: View {
     var body: some View {
         if points.count < 2 {
             RoundedRectangle(cornerRadius: 6, style: .continuous)
-                .fill(PulseTheme.secondaryCard)
+                .fill(PulseTheme.secondaryCard.opacity(0.6))
                 .overlay(
-                    Text("Collecting samples…")
+                    Text("Sampling…")
                         .font(.system(size: 10))
-                        .foregroundStyle(PulseTheme.secondaryText)
+                        .foregroundStyle(PulseTheme.tertiaryText)
                 )
         } else {
             Chart {
@@ -158,7 +226,7 @@ struct SparklineChart: View {
                     )
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [color.opacity(0.24), color.opacity(0.0)],
+                            colors: [color.opacity(0.18), color.opacity(0.0)],
                             startPoint: .top,
                             endPoint: .bottom
                         )
@@ -170,7 +238,7 @@ struct SparklineChart: View {
                         y: .value("Value", pt.1)
                     )
                     .foregroundStyle(color)
-                    .lineStyle(StrokeStyle(lineWidth: 1.75))
+                    .lineStyle(StrokeStyle(lineWidth: 1.6))
                     .interpolationMethod(.catmullRom)
                 }
             }
@@ -198,7 +266,7 @@ struct KeyValueRow: View {
                 .foregroundStyle(valueColor)
                 .lineLimit(1)
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, 3)
     }
 }
 
@@ -214,7 +282,7 @@ struct SegmentedBar: View {
     let total: Double
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             GeometryReader { geo in
                 HStack(spacing: 2) {
                     ForEach(segments) { seg in
@@ -228,31 +296,23 @@ struct SegmentedBar: View {
                     Spacer(minLength: 0)
                 }
             }
-            .frame(height: 10)
+            .frame(height: 8)
             .padding(2)
             .background(
                 RoundedRectangle(cornerRadius: 5, style: .continuous)
                     .fill(PulseTheme.secondaryCard)
             )
 
-            FlowLayoutLegend(segments: segments)
-        }
-    }
-}
-
-private struct FlowLayoutLegend: View {
-    let segments: [SegmentedBarSegment]
-
-    var body: some View {
-        HStack(spacing: 14) {
-            ForEach(segments) { seg in
-                HStack(spacing: 5) {
-                    Circle()
-                        .fill(seg.color)
-                        .frame(width: 7, height: 7)
-                    Text(seg.label)
-                        .font(.system(size: 11))
-                        .foregroundStyle(PulseTheme.secondaryText)
+            HStack(spacing: 16) {
+                ForEach(segments) { seg in
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(seg.color)
+                            .frame(width: 7, height: 7)
+                        Text(seg.label)
+                            .font(.system(size: 11))
+                            .foregroundStyle(PulseTheme.secondaryText)
+                    }
                 }
             }
         }

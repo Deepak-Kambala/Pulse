@@ -32,12 +32,12 @@ struct BatteryDetailView: View {
                         }
                     }
                 } else {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), spacing: 12)], spacing: 12) {
-                        PulseStatTile(title: "Charge", value: PulseFormat.percent(monitor.battery.percentage), subtitle: monitor.battery.stateDescription, status: monitor.battery.status)
-                        PulseStatTile(title: "Power Source", value: monitor.battery.powerSource.rawValue, subtitle: monitor.battery.timeRemainingMinutes.map { "\(PulseFormat.timeRemaining(minutes: $0)) remaining" } ?? "Time est. unavailable")
-                        PulseStatTile(title: "Max Capacity", value: monitor.battery.maxCapacityPercent.map { PulseFormat.percent($0, decimals: 1) } ?? "Unavailable", subtitle: monitor.battery.condition)
-                        PulseStatTile(title: "Cycle Count", value: monitor.battery.cycleCount.map { "\($0)" } ?? "Unavailable")
-                    }
+                    MetricStrip(items: [
+                        MetricStripItem(label: "Charge", value: PulseFormat.percent(monitor.battery.percentage), detail: monitor.battery.stateDescription, status: monitor.battery.status),
+                        MetricStripItem(label: "Power Source", value: monitor.battery.powerSource.rawValue, detail: monitor.battery.timeRemainingMinutes.map { "\(PulseFormat.timeRemaining(minutes: $0)) left" } ?? "Time est. unavailable"),
+                        MetricStripItem(label: "Max Capacity", value: monitor.battery.maxCapacityPercent.map { PulseFormat.percent($0, decimals: 1) } ?? "Unavailable", detail: monitor.battery.condition),
+                        MetricStripItem(label: "Cycle Count", value: monitor.battery.cycleCount.map { "\($0)" } ?? "Unavailable")
+                    ])
 
                     // Battery History Graph
                     PulseCard {

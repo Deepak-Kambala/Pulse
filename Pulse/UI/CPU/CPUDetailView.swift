@@ -53,14 +53,14 @@ struct CPUDetailView: View {
                     .frame(width: 280)
                 }
 
-                // 5 Header Cards
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), spacing: 12)], spacing: 12) {
-                    PulseStatTile(title: "Current CPU", value: PulseFormat.percent(monitor.cpu.totalUsage, decimals: 1), status: monitor.cpu.status)
-                    PulseStatTile(title: "User", value: PulseFormat.percent(monitor.cpu.userUsage, decimals: 1))
-                    PulseStatTile(title: "System", value: PulseFormat.percent(monitor.cpu.systemUsage, decimals: 1))
-                    PulseStatTile(title: "Idle", value: PulseFormat.percent(monitor.cpu.idleUsage, decimals: 1))
-                    PulseStatTile(title: "Logical Cores", value: "\(monitor.cpu.logicalCoreCount)")
-                }
+                // Unified 5-column Metric Strip
+                MetricStrip(items: [
+                    MetricStripItem(label: "Current CPU", value: PulseFormat.percent(monitor.cpu.totalUsage, decimals: 1), status: monitor.cpu.status),
+                    MetricStripItem(label: "User", value: PulseFormat.percent(monitor.cpu.userUsage, decimals: 1)),
+                    MetricStripItem(label: "System", value: PulseFormat.percent(monitor.cpu.systemUsage, decimals: 1)),
+                    MetricStripItem(label: "Idle", value: PulseFormat.percent(monitor.cpu.idleUsage, decimals: 1)),
+                    MetricStripItem(label: "Logical Cores", value: "\(monitor.cpu.logicalCoreCount)")
+                ])
 
                 // Main Multi-Series CPU Chart
                 PulseCard {

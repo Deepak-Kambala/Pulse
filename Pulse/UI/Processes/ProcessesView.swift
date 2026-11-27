@@ -77,21 +77,13 @@ struct ProcessesView: View {
                 }
             }
 
-            // Overview Cards
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 180), spacing: 12)], spacing: 12) {
-                PulseStatTile(title: "Total Processes", value: "\(monitor.processes.count)")
-                PulseStatTile(title: "Active / Running", value: "\(monitor.processes.filter { $0.state == .running || $0.cpuPercent >= 0.5 }.count)")
-                PulseStatTile(
-                    title: "Highest CPU",
-                    value: monitor.topCPUProcesses.first.map { PulseFormat.percent($0.cpuPercent, decimals: 1) } ?? "—",
-                    subtitle: monitor.topCPUProcesses.first?.name
-                )
-                PulseStatTile(
-                    title: "Highest Memory",
-                    value: monitor.topMemoryProcesses.first.map { PulseFormat.bytes($0.memoryBytes) } ?? "—",
-                    subtitle: monitor.topMemoryProcesses.first?.name
-                )
-            }
+            // Unified Metric Strip
+            MetricStrip(items: [
+                MetricStripItem(label: "Total Processes", value: "\(monitor.processes.count)"),
+                MetricStripItem(label: "Active / Running", value: "\(monitor.processes.filter { $0.state == .running || $0.cpuPercent >= 0.5 }.count)"),
+                MetricStripItem(label: "Highest CPU", value: monitor.topCPUProcesses.first.map { PulseFormat.percent($0.cpuPercent, decimals: 1) } ?? "—", detail: monitor.topCPUProcesses.first?.name),
+                MetricStripItem(label: "Highest Memory", value: monitor.topMemoryProcesses.first.map { PulseFormat.bytes($0.memoryBytes) } ?? "—", detail: monitor.topMemoryProcesses.first?.name)
+            ])
 
             // Filter Bar
             Picker("Filter", selection: $filter) {

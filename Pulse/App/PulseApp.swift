@@ -33,6 +33,7 @@ struct PulseApp: App {
                 .environmentObject(monitor)
                 .environmentObject(settings)
         }
+        .windowToolbarStyle(.unified(showsTitle: false))
         .defaultSize(width: 1250, height: 820)
         .windowResizability(.contentMinSize)
 

@@ -39,30 +39,12 @@ struct GPUDetailView: View {
                                     StatusPill(status: .healthy, customLabel: device.hasUnifiedMemory ? "Unified Memory" : "Discrete")
                                 }
 
-                                LazyVGrid(columns: [GridItem(.adaptive(minimum: 180), spacing: 12)], spacing: 12) {
-                                    PulseStatTile(
-                                        title: "GPU Utilization",
-                                        value: device.utilizationPercent.map { PulseFormat.percent($0, decimals: 1) } ?? "Unavailable",
-                                        subtitle: device.utilizationPercent == nil ? "Not exposed by public API" : "IOAccelerator",
-                                        status: device.utilizationPercent == nil ? .neutral : .healthy
-                                    )
-                                    PulseStatTile(
-                                        title: "In-Use GPU Memory",
-                                        value: device.inUseSystemMemoryBytes.map { PulseFormat.bytes($0) } ?? "Unavailable",
-                                        subtitle: device.inUseSystemMemoryBytes == nil ? "Driver restricted" : "System memory",
-                                        status: device.inUseSystemMemoryBytes == nil ? .neutral : .healthy
-                                    )
-                                    PulseStatTile(
-                                        title: "Max Working Set",
-                                        value: PulseFormat.bytes(device.recommendedMaxWorkingSetBytes),
-                                        subtitle: "Metal recommended"
-                                    )
-                                    PulseStatTile(
-                                        title: "Max Buffer Length",
-                                        value: PulseFormat.bytes(device.maxBufferLengthBytes),
-                                        subtitle: "Metal limit"
-                                    )
-                                }
+                                MetricStrip(items: [
+                                    MetricStripItem(label: "Utilization", value: device.utilizationPercent.map { PulseFormat.percent($0, decimals: 1) } ?? "Unavailable", detail: device.utilizationPercent == nil ? "Not in public API" : "IOAccelerator", status: device.utilizationPercent == nil ? .neutral : .healthy),
+                                    MetricStripItem(label: "In-Use Memory", value: device.inUseSystemMemoryBytes.map { PulseFormat.bytes($0) } ?? "Unavailable", detail: device.inUseSystemMemoryBytes == nil ? "Driver restricted" : "System memory", status: device.inUseSystemMemoryBytes == nil ? .neutral : .healthy),
+                                    MetricStripItem(label: "Max Working Set", value: PulseFormat.bytes(device.recommendedMaxWorkingSetBytes), detail: "Metal recommended"),
+                                    MetricStripItem(label: "Max Buffer", value: PulseFormat.bytes(device.maxBufferLengthBytes), detail: "Metal limit")
+                                ])
 
                                 Divider().overlay(PulseTheme.border)
                                 KeyValueRow(key: "Registry ID", value: String(format: "0x%llX", device.id))

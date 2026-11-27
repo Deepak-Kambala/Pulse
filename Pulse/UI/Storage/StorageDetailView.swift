@@ -16,12 +16,12 @@ struct StorageDetailView: View {
                 }
 
                 if let primary = monitor.storage.primaryVolume {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 180), spacing: 12)], spacing: 12) {
-                        PulseStatTile(title: "Total Capacity", value: PulseFormat.decimalBytes(primary.totalBytes))
-                        PulseStatTile(title: "Used Capacity", value: PulseFormat.decimalBytes(primary.usedBytes), subtitle: PulseFormat.percent(primary.usedPercentage, decimals: 1))
-                        PulseStatTile(title: "Available", value: PulseFormat.decimalBytes(primary.availableBytes), status: primary.status)
-                        PulseStatTile(title: "Mounted Volumes", value: "\(monitor.storage.volumes.count)")
-                    }
+                    MetricStrip(items: [
+                        MetricStripItem(label: "Total Capacity", value: PulseFormat.decimalBytes(primary.totalBytes)),
+                        MetricStripItem(label: "Used", value: PulseFormat.decimalBytes(primary.usedBytes), detail: PulseFormat.percent(primary.usedPercentage, decimals: 1)),
+                        MetricStripItem(label: "Available", value: PulseFormat.decimalBytes(primary.availableBytes), status: primary.status),
+                        MetricStripItem(label: "Volumes", value: "\(monitor.storage.volumes.count)")
+                    ])
                 }
 
                 // Volume Explorer
