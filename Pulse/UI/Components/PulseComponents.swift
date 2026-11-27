@@ -118,6 +118,7 @@ struct MetricStrip: View {
                 }
             }
         }
+        .fixedSize(horizontal: false, vertical: true)
     }
 }
 
@@ -316,5 +317,6 @@ struct SegmentedBar: View {
                 }
             }
         }
+        .fixedSize(horizontal: false, vertical: true)
     }
 }

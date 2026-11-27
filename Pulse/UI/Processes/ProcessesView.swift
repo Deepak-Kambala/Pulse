@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 enum ProcessFilter: String, CaseIterable, Identifiable {
     case all = "All"
@@ -23,6 +24,10 @@ struct ProcessesView: View {
 
     private var currentUsername: String { NSUserName() }
 
+    private var activeCount: Int {
+        monitor.processes.filter { $0.state == .running }.count
+    }
+
     private var filteredProcesses: [ProcessInfoModel] {
         var list = monitor.processes
 
@@ -38,14 +43,14 @@ struct ProcessesView: View {
         case .highMemory:
             list = list.filter { $0.memoryBytes >= 256 * 1024 * 1024 }
         case .active:
-            list = list.filter { $0.state == .running || $0.cpuPercent >= 1.0 }
+            list = list.filter { $0.state == .running }
         }
 
         if !searchText.isEmpty {
             let q = searchText.lowercased()
             list = list.filter {
                 $0.name.lowercased().contains(q) ||
-                "\($0.pid)".contains(q) ||
+                String($0.pid).contains(q) ||
                 $0.user.lowercased().contains(q)
             }
         }
@@ -62,87 +67,161 @@ struct ProcessesView: View {
         VStack(alignment: .leading, spacing: 14) {
             SectionHeader(
                 title: "Processes",
-                subtitle: "Running processes & resource usage"
-            ) {
-                HStack(spacing: 8) {
-                    TextField("Search name, PID, user…", text: $searchText)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(width: 210)
-                    Button {
-                        monitor.refreshNow()
-                    } label: {
-                        Image(systemName: "arrow.clockwise")
-                    }
-                    .help("Refresh process list")
-                }
-            }
+                subtitle: "\(filteredProcesses.count) of \(monitor.processes.count) processes"
+            )
 
-            // Unified Metric Strip
             MetricStrip(items: [
-                MetricStripItem(label: "Total Processes", value: "\(monitor.processes.count)"),
-                MetricStripItem(label: "Active / Running", value: "\(monitor.processes.filter { $0.state == .running || $0.cpuPercent >= 0.5 }.count)"),
-                MetricStripItem(label: "Highest CPU", value: monitor.topCPUProcesses.first.map { PulseFormat.percent($0.cpuPercent, decimals: 1) } ?? "—", detail: monitor.topCPUProcesses.first?.name),
-                MetricStripItem(label: "Highest Memory", value: monitor.topMemoryProcesses.first.map { PulseFormat.bytes($0.memoryBytes) } ?? "—", detail: monitor.topMemoryProcesses.first?.name)
+                MetricStripItem(label: "Total", value: "\(monitor.processes.count)"),
+                MetricStripItem(label: "Active (≥0.5%)", value: "\(activeCount)"),
+                MetricStripItem(
+                    label: "Highest CPU",
+                    value: monitor.topCPUProcesses.first.map { PulseFormat.percent($0.cpuPercent, decimals: 1) } ?? "—",
+                    detail: monitor.topCPUProcesses.first?.name
+                ),
+                MetricStripItem(
+                    label: "Highest Memory",
+                    value: monitor.topMemoryProcesses.first.map { PulseFormat.bytes($0.memoryBytes) } ?? "—",
+                    detail: monitor.topMemoryProcesses.first?.name
+                )
             ])
 
-            // Filter Bar
-            Picker("Filter", selection: $filter) {
-                ForEach(ProcessFilter.allCases) { f in
-                    Text(f.rawValue).tag(f)
+            // Compact Filter Pills + Search Bar
+            HStack(spacing: 10) {
+                HStack(spacing: 4) {
+                    ForEach(ProcessFilter.allCases) { f in
+                        let isSelected = filter == f
+                        Button {
+                            filter = f
+                        } label: {
+                            Text(f.rawValue)
+                                .font(.system(size: 11.5, weight: isSelected ? .medium : .regular))
+                                .foregroundStyle(isSelected ? PulseTheme.primaryText : PulseTheme.secondaryText)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                        .fill(isSelected ? PulseTheme.secondaryCard : Color.clear)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                        .strokeBorder(isSelected ? PulseTheme.hairline : Color.clear, lineWidth: 1)
+                                )
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
-            }
-            .pickerStyle(.segmented)
+                .padding(3)
+                .background(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(PulseTheme.card)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(PulseTheme.hairline, lineWidth: 1)
+                )
 
-            // Main Table + Inspector Split
+                Spacer()
+
+                HStack(spacing: 6) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 11))
+                        .foregroundStyle(PulseTheme.tertiaryText)
+                    TextField("Search name, PID, user…", text: $searchText)
+                        .textFieldStyle(.plain)
+                        .font(.system(size: 12))
+                    if !searchText.isEmpty {
+                        Button {
+                            searchText = ""
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 11))
+                                .foregroundStyle(PulseTheme.tertiaryText)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .frame(width: 220)
+                .background(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(PulseTheme.card)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(PulseTheme.hairline, lineWidth: 1)
+                )
+            }
+
+            // Main Table + Optional Inspector Split
             HSplitView {
                 Table(filteredProcesses, selection: $selectedPID, sortOrder: $sortOrder) {
                     TableColumn("Process", value: \.name) { proc in
-                        HStack(spacing: 6) {
+                        HStack(spacing: 8) {
+                            ProcessIconView(pid: proc.pid, path: proc.executablePath)
                             Text(proc.name)
                                 .font(.system(size: 12, weight: .medium))
+                                .foregroundStyle(PulseTheme.primaryText)
                                 .lineLimit(1)
                             if proc.isSystemCritical {
                                 Image(systemName: "lock.shield")
                                     .font(.system(size: 10))
-                                    .foregroundStyle(PulseTheme.secondaryText)
-                                    .help("Critical system process")
+                                    .foregroundStyle(PulseTheme.tertiaryText)
+                                    .help("Protected system process")
                             }
                         }
                     }
-                    .width(min: 140, ideal: 210)
+                    .width(min: 180, ideal: 260)
 
                     TableColumn("PID", value: \.pid) { proc in
-                        Text("\(proc.pid)").monospacedDigit()
+                        Text(String(proc.pid))
+                            .font(.system(size: 11.5, design: .monospaced))
+                            .foregroundStyle(PulseTheme.secondaryText)
                     }
-                    .width(62)
+                    .width(64)
 
                     TableColumn("PPID", value: \.ppid) { proc in
-                        Text("\(proc.ppid)").monospacedDigit().foregroundStyle(PulseTheme.secondaryText)
+                        Text(String(proc.ppid))
+                            .font(.system(size: 11.5, design: .monospaced))
+                            .foregroundStyle(PulseTheme.tertiaryText)
                     }
-                    .width(62)
+                    .width(64)
 
                     TableColumn("CPU %", value: \.cpuPercent) { proc in
                         Text(PulseFormat.percent(proc.cpuPercent, decimals: 1))
-                            .monospacedDigit()
-                            .foregroundStyle(proc.cpuPercent >= 50 ? PulseTheme.warning : PulseTheme.primaryText)
-                    }
-                    .width(72)
-
-                    TableColumn("Memory", value: \.memoryBytes) { proc in
-                        Text(PulseFormat.bytes(proc.memoryBytes)).monospacedDigit()
-                    }
-                    .width(86)
-
-                    TableColumn("User", value: \.user) { proc in
-                        Text(proc.user).foregroundStyle(PulseTheme.secondaryText).lineLimit(1)
-                    }
-                    .width(84)
-
-                    TableColumn("State", value: \.state.rawValue) { proc in
-                        Text(proc.state.rawValue).foregroundStyle(PulseTheme.secondaryText)
+                            .font(.system(size: 12, weight: proc.cpuPercent >= 10 ? .semibold : .regular, design: .monospaced))
+                            .foregroundStyle(cpuColor(proc.cpuPercent))
                     }
                     .width(74)
+
+                    TableColumn("Memory", value: \.memoryBytes) { proc in
+                        Text(PulseFormat.bytes(proc.memoryBytes))
+                            .font(.system(size: 12, design: .monospaced))
+                            .foregroundStyle(PulseTheme.primaryText)
+                    }
+                    .width(88)
+
+                    TableColumn("User", value: \.user) { proc in
+                        Text(proc.user)
+                            .font(.system(size: 11.5))
+                            .foregroundStyle(PulseTheme.secondaryText)
+                            .lineLimit(1)
+                    }
+                    .width(96)
+
+                    TableColumn("State", value: \.state.rawValue) { proc in
+                        HStack(spacing: 5) {
+                            Circle()
+                                .fill(proc.state == .running ? PulseTheme.accent : PulseTheme.tertiaryText.opacity(0.6))
+                                .frame(width: 5, height: 5)
+                            Text(proc.state == .running ? "Active" : proc.state.rawValue)
+                                .font(.system(size: 11.5))
+                                .foregroundStyle(proc.state == .running ? PulseTheme.primaryText : PulseTheme.tertiaryText)
+                        }
+                    }
+                    .width(76)
                 }
+                .alternatingRowBackgrounds(.disabled)
                 .contextMenu(forSelectionType: Int32.self) { items in
                     if let pid = items.first, let proc = monitor.processes.first(where: { $0.pid == pid }) {
                         Button("Inspect Details") { selectedPID = pid }
@@ -157,15 +236,15 @@ struct ProcessesView: View {
                         .disabled(proc.isSystemCritical)
                     }
                 }
-                .frame(minWidth: 520)
+                .frame(minWidth: 520, maxHeight: .infinity)
 
                 if let proc = selectedProcess {
                     processInspector(proc)
-                        .frame(minWidth: 260, idealWidth: 300, maxWidth: 340)
+                        .frame(minWidth: 270, idealWidth: 300, maxWidth: 340)
                 }
             }
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(PulseTheme.border, lineWidth: 1))
+            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(PulseTheme.hairline, lineWidth: 1))
         }
         .padding(22)
         .background(PulseTheme.background)
@@ -188,7 +267,7 @@ struct ProcessesView: View {
             }
         } message: {
             if let target = pendingTerminate {
-                Text("Are you sure you want to \(target.force ? "force terminate (SIGKILL)" : "terminate (SIGTERM)") \(target.process.name) (PID \(target.process.pid))?")
+                Text("Are you sure you want to \(target.force ? "force terminate (SIGKILL)" : "terminate (SIGTERM)") \(target.process.name) (PID \(String(target.process.pid)))?")
             }
         }
         .alert("Process Action Failed", isPresented: Binding(
@@ -201,62 +280,72 @@ struct ProcessesView: View {
         }
     }
 
+    private func cpuColor(_ cpu: Double) -> Color {
+        if cpu >= 50 { return PulseTheme.warning }
+        if cpu >= 10 { return PulseTheme.accent }
+        return PulseTheme.secondaryText
+    }
+
     private func processInspector(_ proc: ProcessInfoModel) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 10) {
-                HStack {
+                HStack(spacing: 8) {
+                    ProcessIconView(pid: proc.pid, path: proc.executablePath)
                     Text(proc.name)
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(PulseTheme.primaryText)
+                        .lineLimit(1)
                     Spacer()
                     Button {
                         selectedPID = nil
                     } label: {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(PulseTheme.secondaryText)
+                            .foregroundStyle(PulseTheme.tertiaryText)
                     }
                     .buttonStyle(.plain)
                 }
 
-                Divider().overlay(PulseTheme.border)
-                KeyValueRow(key: "PID", value: "\(proc.pid)")
-                KeyValueRow(key: "Parent PID", value: "\(proc.ppid)")
+                Rectangle().fill(PulseTheme.hairline).frame(height: 1)
+                KeyValueRow(key: "PID", value: String(proc.pid))
+                KeyValueRow(key: "Parent PID", value: String(proc.ppid))
                 KeyValueRow(key: "User", value: proc.user)
-                KeyValueRow(key: "State", value: proc.state.rawValue)
+                KeyValueRow(key: "State", value: proc.state == .running ? "Active" : proc.state.rawValue)
                 KeyValueRow(key: "CPU Usage", value: PulseFormat.percent(proc.cpuPercent, decimals: 1))
-                KeyValueRow(key: "Memory Footprint", value: PulseFormat.bytes(proc.memoryBytes))
+                KeyValueRow(key: "Memory", value: PulseFormat.bytes(proc.memoryBytes))
                 KeyValueRow(key: "Memory Share", value: PulseFormat.percent(proc.memoryPercent, decimals: 2))
                 if let start = proc.startTime {
                     KeyValueRow(key: "Started", value: PulseFormat.timestampFormatter.string(from: start))
                 }
 
                 if let path = proc.executablePath {
-                    Divider().overlay(PulseTheme.border)
-                    Text("Executable Path")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(PulseTheme.secondaryText)
+                    Rectangle().fill(PulseTheme.hairline).frame(height: 1)
+                    Text("EXECUTABLE")
+                        .font(.system(size: 10, weight: .semibold))
+                        .tracking(0.5)
+                        .foregroundStyle(PulseTheme.tertiaryText)
                     Text(path)
                         .font(.system(size: 11, design: .monospaced))
-                        .foregroundStyle(PulseTheme.primaryText)
+                        .foregroundStyle(PulseTheme.secondaryText)
                         .textSelection(.enabled)
                 }
 
                 if let cmd = proc.commandLine {
-                    Divider().overlay(PulseTheme.border)
-                    Text("Command Line")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(PulseTheme.secondaryText)
+                    Rectangle().fill(PulseTheme.hairline).frame(height: 1)
+                    Text("COMMAND LINE")
+                        .font(.system(size: 10, weight: .semibold))
+                        .tracking(0.5)
+                        .foregroundStyle(PulseTheme.tertiaryText)
                     Text(cmd)
-                        .font(.system(size: 10, design: .monospaced))
+                        .font(.system(size: 10.5, design: .monospaced))
                         .foregroundStyle(PulseTheme.secondaryText)
                         .textSelection(.enabled)
                 }
 
-                Divider().overlay(PulseTheme.border)
+                Rectangle().fill(PulseTheme.hairline).frame(height: 1)
                 if proc.isSystemCritical {
                     Label("Protected system process", systemImage: "lock.shield.fill")
                         .font(.system(size: 11))
-                        .foregroundStyle(PulseTheme.secondaryText)
+                        .foregroundStyle(PulseTheme.tertiaryText)
                 } else {
                     HStack(spacing: 8) {
                         Button("Terminate") {
@@ -274,5 +363,24 @@ struct ProcessesView: View {
             .padding(14)
         }
         .background(PulseTheme.card)
+    }
+}
+
+private struct ProcessIconView: View {
+    let pid: Int32
+    let path: String?
+
+    var body: some View {
+        if let icon = NSRunningApplication(processIdentifier: pid)?.icon {
+            Image(nsImage: icon)
+                .resizable()
+                .interpolation(.high)
+                .frame(width: 16, height: 16)
+        } else {
+            Image(systemName: path?.contains(".app/") == true ? "app.dashed" : "terminal")
+                .font(.system(size: 11))
+                .foregroundStyle(PulseTheme.tertiaryText)
+                .frame(width: 16, height: 16)
+        }
     }
 }

@@ -51,7 +51,7 @@ final class ProcessMonitor: @unchecked Sendable {
             let ret = proc_pidinfo(pid, PROC_PIDTASKALLINFO, 0, &taskAll, expectedSize)
             guard ret == expectedSize else { continue }
 
-            let name = withUnsafePointer(to: taskAll.pbsd.pbi_name) { ptr in
+            let rawName = withUnsafePointer(to: taskAll.pbsd.pbi_name) { ptr in
                 ptr.withMemoryRebound(to: CChar.self, capacity: Int(MAXCOMLEN) * 2) {
                     String(cString: $0)
                 }
@@ -61,9 +61,16 @@ final class ProcessMonitor: @unchecked Sendable {
                     String(cString: $0)
                 }
             }
-            let processName = name.isEmpty ? (fallbackComm.isEmpty ? "pid \(pid)" : fallbackComm) : name
-
             let path = readPath(pid: pid)
+            let pathName = path.map { URL(fileURLWithPath: $0).lastPathComponent }
+            let baseName = rawName.isEmpty ? (fallbackComm.isEmpty ? "pid \(pid)" : fallbackComm) : rawName
+            // pbi_name is capped at 31 chars on macOS; prefer full executable basename when truncated
+            let processName: String
+            if let pathName, !pathName.isEmpty, (rawName.count >= 30 || rawName.isEmpty) {
+                processName = pathName
+            } else {
+                processName = baseName
+            }
             let uid = taskAll.pbsd.pbi_uid
             let userName = resolveUsername(uid: uid)
             let ppid = Int32(taskAll.pbsd.pbi_ppid)
@@ -98,7 +105,10 @@ final class ProcessMonitor: @unchecked Sendable {
             }
             memoryHistory[pid] = hist
 
-            let state = mapProcessState(taskAll.pbsd.pbi_status)
+            let rawState = mapProcessState(taskAll.pbsd.pbi_status)
+            let state: ProcessRunState = (rawState == .stopped || rawState == .zombie)
+                ? rawState
+                : (cpuPct >= 0.5 ? .running : .idle)
             let startTime: Date? = taskAll.pbsd.pbi_start_tvsec > 0
                 ? Date(timeIntervalSince1970: TimeInterval(taskAll.pbsd.pbi_start_tvsec))
                 : nil
