@@ -6,6 +6,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Task { @MainActor in
             PulseSettings.shared.applyAppearance()
             PulseSettings.shared.applyDockPolicy()
+            NotificationsManager.shared.configure()
             SystemMonitor.shared.start()
 
             if PulseSettings.shared.startMinimized {

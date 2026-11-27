@@ -54,6 +54,7 @@ final class SystemMonitor: ObservableObject {
     private var lastBatteryCapacityLog: Date = .distantPast
     private var didAlertLowBattery: Bool = false
     private var didAlertMaxBattery: Bool = false
+    private var sustainedHighCPUTicks: Int = 0
     private var thermalObserver: NSObjectProtocol?
 
     private init() {
@@ -292,34 +293,49 @@ final class SystemMonitor: ObservableObject {
     }
 
     private func evaluateNotifications(settings: PulseSettings) {
+        // Only force-notify on screen for genuine "must-see" conditions;
+        // non-critical observations stay quietly in the Insights tab.
         if settings.notifyHighCPU && cpu.isAvailable && cpu.totalUsage >= settings.highCPUThreshold {
-            NotificationsManager.shared.sendIfAllowed(
-                key: "high_cpu",
-                title: "High CPU Usage",
-                body: "CPU utilization is at \(PulseFormat.percent(cpu.totalUsage, decimals: 0))."
-            )
+            sustainedHighCPUTicks += 1
+            if sustainedHighCPUTicks >= 15 { // ~30s sustained
+                NotificationsManager.shared.sendIfAllowed(
+                    key: "high_cpu",
+                    title: "Sustained High CPU (\(PulseFormat.percent(cpu.totalUsage, decimals: 0)))",
+                    body: "CPU load has remained above \(Int(settings.highCPUThreshold))%.",
+                    mustSee: cpu.totalUsage >= 95
+                )
+            }
+        } else {
+            sustainedHighCPUTicks = 0
         }
-        if settings.notifyHighMemoryPressure && (memory.pressureLevel == .warning || memory.pressureLevel == .critical) {
+
+        if settings.notifyHighMemoryPressure && memory.pressureLevel == .critical {
             NotificationsManager.shared.sendIfAllowed(
                 key: "memory_pressure",
-                title: "Memory Pressure \(memory.pressureLevel.rawValue)",
-                body: "Used memory: \(PulseFormat.bytes(memory.usedBytes)) / \(PulseFormat.bytes(memory.physicalBytes))."
+                title: "Critical Memory Pressure",
+                body: "Used memory: \(PulseFormat.bytes(memory.usedBytes)) / \(PulseFormat.bytes(memory.physicalBytes)).",
+                mustSee: true
             )
         }
-        if settings.notifyThermalWarning && (thermal.state == .serious || thermal.state == .critical) {
+
+        if settings.notifyThermalWarning && thermal.state == .critical {
             NotificationsManager.shared.sendIfAllowed(
                 key: "thermal_warning",
-                title: "Thermal State: \(thermal.state.rawValue)",
-                body: thermal.state.summaryDescription
+                title: "Critical Thermal State",
+                body: thermal.state.summaryDescription,
+                mustSee: true
             )
         }
-        if settings.notifyLowStorage, let primary = storage.primaryVolume, primary.availablePercentage < settings.lowStorageThresholdPercent {
+
+        if settings.notifyLowStorage, let primary = storage.primaryVolume, primary.availablePercentage < min(10.0, settings.lowStorageThresholdPercent) {
             NotificationsManager.shared.sendIfAllowed(
                 key: "low_storage",
-                title: "Low Disk Space on \(primary.name)",
-                body: "Only \(PulseFormat.decimalBytes(primary.availableBytes)) remaining."
+                title: "Critically Low Disk Space on \(primary.name)",
+                body: "Only \(PulseFormat.decimalBytes(primary.availableBytes)) remaining.",
+                mustSee: true
             )
         }
+
         if battery.hasBattery {
             if !battery.externalConnected && battery.percentage <= settings.lowBatteryThreshold {
                 if settings.notifyLowBattery && !didAlertLowBattery {
@@ -329,6 +345,7 @@ final class SystemMonitor: ObservableObject {
                         title: "Low Battery (\(PulseFormat.percent(battery.percentage)))",
                         body: "Battery reached \(Int(settings.lowBatteryThreshold))% minimum threshold. Connect your Mac to power.",
                         soundName: "low",
+                        mustSee: true,
                         bypassCooldown: true
                     )
                 }
@@ -344,6 +361,7 @@ final class SystemMonitor: ObservableObject {
                         title: "Max Battery Reached (\(PulseFormat.percent(battery.percentage)))",
                         body: "Battery reached \(Int(settings.maxBatteryThreshold))% target. You can unplug your charger.",
                         soundName: "max",
+                        mustSee: true,
                         bypassCooldown: true
                     )
                 }
