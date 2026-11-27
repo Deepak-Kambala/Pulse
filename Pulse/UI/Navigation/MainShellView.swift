@@ -42,7 +42,7 @@ struct MainShellView: View {
                     Text("Pulse")
                         .font(.system(size: 13.5, weight: .semibold))
                         .foregroundStyle(PulseTheme.primaryText)
-                    Text("Understand your Mac.")
+                    Text("Know what's going on.")
                         .font(.system(size: 10))
                         .foregroundStyle(PulseTheme.tertiaryText)
                 }

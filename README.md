@@ -1,4 +1,4 @@
-# Pulse — Understand your Mac
+# Pulse — Know what's going on.
 
 Pulse is a native, local-first macOS system monitoring and diagnostics application built with **Swift**, **SwiftUI**, **Swift Charts**, **AppKit**, **IOKit**, **Mach APIs**, **libproc**, **Metal**, and **SQLite**.
 
