@@ -14,15 +14,12 @@ struct PerformanceHistoryView: View {
             VStack(alignment: .leading, spacing: 16) {
                 SectionHeader(
                     title: "Performance History",
-                    subtitle: "Persisted SQLite telemetry (\(monitor.snapshotCount) total snapshots)"
+                    subtitle: "\(monitor.snapshotCount) recorded snapshots"
                 ) {
-                    Picker("Range", selection: $range) {
-                        ForEach(HistoryTimeRange.allCases) { r in
-                            Text(r.rawValue).tag(r)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(width: 300)
+                    PulseSegmentedControl(
+                        options: HistoryTimeRange.allCases.map { ($0, $0.rawValue) },
+                        selection: $range
+                    )
                 }
 
                 if snapshots.count < 2 {

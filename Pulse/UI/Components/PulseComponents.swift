@@ -360,3 +360,103 @@ struct SegmentedBar: View {
         .fixedSize(horizontal: false, vertical: true)
     }
 }
+
+struct PulseSegmentedControl<T: Hashable>: View {
+    let options: [(value: T, label: String)]
+    @Binding var selection: T
+
+    var body: some View {
+        HStack(spacing: 3) {
+            ForEach(Array(options.enumerated()), id: \.offset) { _, option in
+                let isSelected = selection == option.value
+                Button {
+                    withAnimation(.easeOut(duration: 0.14)) {
+                        selection = option.value
+                    }
+                } label: {
+                    Text(option.label)
+                        .font(.system(size: 11.5, weight: isSelected ? .medium : .regular))
+                        .foregroundStyle(isSelected ? PulseTheme.primaryText : PulseTheme.secondaryText)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .fill(isSelected ? PulseTheme.secondaryCard : Color.clear)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .strokeBorder(isSelected ? PulseTheme.hairline : Color.clear, lineWidth: 1)
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(3)
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(PulseTheme.card)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .strokeBorder(PulseTheme.hairline, lineWidth: 1)
+        )
+    }
+}
+
+struct PulseDropdown<T: Hashable>: View {
+    let label: String?
+    let options: [(value: T, label: String)]
+    @Binding var selection: T
+
+    init(label: String? = nil, options: [(value: T, label: String)], selection: Binding<T>) {
+        self.label = label
+        self.options = options
+        self._selection = selection
+    }
+
+    private var currentLabel: String {
+        options.first(where: { $0.value == selection })?.label ?? ""
+    }
+
+    var body: some View {
+        Menu {
+            ForEach(Array(options.enumerated()), id: \.offset) { _, option in
+                Button {
+                    selection = option.value
+                } label: {
+                    if selection == option.value {
+                        Label(option.label, systemImage: "checkmark")
+                    } else {
+                        Text(option.label)
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: 8) {
+                if let label {
+                    Text(label)
+                        .font(.system(size: 11.5))
+                        .foregroundStyle(PulseTheme.tertiaryText)
+                }
+                Text(currentLabel)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(PulseTheme.primaryText)
+                Image(systemName: "chevron.up.chevron.down")
+                    .font(.system(size: 9.5, weight: .semibold))
+                    .foregroundStyle(PulseTheme.secondaryText)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .fill(PulseTheme.secondaryCard)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .strokeBorder(PulseTheme.hairline, lineWidth: 1)
+            )
+        }
+        .menuStyle(.borderlessButton)
+        .fixedSize()
+    }
+}

@@ -15,15 +15,13 @@ struct InsightsView: View {
             VStack(alignment: .leading, spacing: 16) {
                 SectionHeader(
                     title: "Pulse Insights",
-                    subtitle: "Deterministic local diagnostics derived from live system measurements"
+                    subtitle: "Local diagnostics from live system measurements"
                 ) {
-                    Picker("Category", selection: $selectedCategory) {
-                        Text("All").tag(InsightCategory?.none)
-                        ForEach(InsightCategory.allCases, id: \.self) { cat in
-                            Text(cat.rawValue).tag(InsightCategory?.some(cat))
-                        }
-                    }
-                    .frame(width: 150)
+                    PulseDropdown(
+                        label: "Category",
+                        options: [(InsightCategory?.none, "All")] + InsightCategory.allCases.map { (InsightCategory?.some($0), $0.rawValue) },
+                        selection: $selectedCategory
+                    )
                 }
 
                 if visibleInsights.isEmpty {

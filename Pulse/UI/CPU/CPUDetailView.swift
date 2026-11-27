@@ -44,13 +44,10 @@ struct CPUDetailView: View {
                     title: "CPU",
                     subtitle: "\(monitor.identity.chipName) · \(monitor.cpu.logicalCoreCount) logical cores"
                 ) {
-                    Picker("Window", selection: $filter) {
-                        ForEach(CPUTimeFilter.allCases) { f in
-                            Text(f.rawValue).tag(f)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(width: 280)
+                    PulseSegmentedControl(
+                        options: CPUTimeFilter.allCases.map { ($0, $0.rawValue) },
+                        selection: $filter
+                    )
                 }
 
                 // Unified 5-column Metric Strip
