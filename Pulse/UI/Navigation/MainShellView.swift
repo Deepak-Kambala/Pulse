@@ -122,12 +122,14 @@ struct MainShellView: View {
                 Spacer()
 
                 if item == .insights && monitor.activeInsightsCount > 0 {
-                    Text("\(monitor.activeInsightsCount)")
-                        .font(.system(size: 10, weight: .semibold, design: .monospaced))
-                        .foregroundStyle(PulseTheme.warning)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 1)
-                        .background(Capsule().fill(PulseTheme.warning.opacity(0.15)))
+                    HStack(spacing: 4) {
+                        Circle()
+                            .fill(PulseTheme.warning)
+                            .frame(width: 5, height: 5)
+                        Text("\(monitor.activeInsightsCount)")
+                            .font(.system(size: 11, weight: .medium, design: .monospaced))
+                            .foregroundStyle(PulseTheme.secondaryText)
+                    }
                 }
             }
             .padding(.horizontal, 10)
