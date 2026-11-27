@@ -8,7 +8,7 @@ struct GPUDetailView: View {
             VStack(alignment: .leading, spacing: 16) {
                 SectionHeader(
                     title: "GPU",
-                    subtitle: "Metal device discovery & IOKit accelerator capabilities"
+                    subtitle: "Metal & graphics hardware"
                 ) {
                     StatusPill(
                         status: monitor.gpu.isAvailable ? .healthy : .neutral,
@@ -51,16 +51,6 @@ struct GPUDetailView: View {
                                 KeyValueRow(key: "Low Power", value: device.isLowPower ? "Yes" : "No")
                                 KeyValueRow(key: "Headless", value: device.isHeadless ? "Yes" : "No")
                                 KeyValueRow(key: "Pulse Metal Allocated", value: PulseFormat.bytes(device.currentAllocatedBytes))
-
-                                HStack(spacing: 8) {
-                                    Image(systemName: "info.circle")
-                                        .foregroundStyle(PulseTheme.secondaryAccent)
-                                    Text(device.driverStatusNote)
-                                        .font(.system(size: 11))
-                                        .foregroundStyle(PulseTheme.secondaryText)
-                                }
-                                .padding(10)
-                                .background(RoundedRectangle(cornerRadius: 8).fill(PulseTheme.secondaryCard))
                             }
                         }
                     }

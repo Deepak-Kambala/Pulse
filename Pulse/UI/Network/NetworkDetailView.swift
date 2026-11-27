@@ -9,7 +9,7 @@ struct NetworkDetailView: View {
             VStack(alignment: .leading, spacing: 16) {
                 SectionHeader(
                     title: "Network",
-                    subtitle: "Real-time interface throughput via getifaddrs & AF_LINK counters"
+                    subtitle: "Interface throughput & traffic"
                 ) {
                     StatusPill(status: monitor.network.activeInterfacesCount > 0 ? .healthy : .neutral, customLabel: "\(monitor.network.activeInterfacesCount) Active")
                 }

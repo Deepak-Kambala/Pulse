@@ -9,9 +9,9 @@ struct MemoryDetailView: View {
             VStack(alignment: .leading, spacing: 16) {
                 SectionHeader(
                     title: "Memory",
-                    subtitle: "Physical RAM: \(PulseFormat.bytes(monitor.memory.physicalBytes, decimals: 0)) · Mach VM Statistics"
+                    subtitle: "\(PulseFormat.bytes(monitor.memory.physicalBytes, decimals: 0)) Physical RAM"
                 ) {
-                    StatusPill(status: monitor.memory.pressureLevel.status, customLabel: "Pressure: \(monitor.memory.pressureLevel.rawValue)")
+                    StatusPill(status: monitor.memory.pressureLevel.status, customLabel: monitor.memory.pressureLevel.rawValue)
                 }
 
                 // Unified 6-column Metric Strip (no orphan card)
@@ -32,7 +32,7 @@ struct MemoryDetailView: View {
                                 .font(.system(size: 13, weight: .semibold))
                                 .foregroundStyle(PulseTheme.primaryText)
                             Spacer()
-                            Text("Cached files (\(PulseFormat.bytes(monitor.memory.cachedFilesBytes))) are reclaimable and not counted as used.")
+                            Text("Cached: \(PulseFormat.bytes(monitor.memory.cachedFilesBytes))")
                                 .font(.system(size: 11))
                                 .foregroundStyle(PulseTheme.secondaryText)
                         }
@@ -46,10 +46,6 @@ struct MemoryDetailView: View {
                             ],
                             total: Double(max(1, monitor.memory.physicalBytes))
                         )
-
-                        Text("Methodology: App = (internal − purgeable) pages; Wired = wire_count; Compressed = compressor_page_count; Cached = (external + purgeable) pages. Used = App + Wired + Compressed.")
-                            .font(.system(size: 11))
-                            .foregroundStyle(PulseTheme.secondaryText)
                     }
                 }
 

@@ -9,16 +9,16 @@ struct ThermalDetailView: View {
             VStack(alignment: .leading, spacing: 16) {
                 SectionHeader(
                     title: "Thermal",
-                    subtitle: "System thermal pressure via ProcessInfo.thermalState"
+                    subtitle: "System thermal pressure"
                 ) {
                     StatusPill(status: monitor.thermal.state.status, customLabel: monitor.thermal.state.rawValue)
                 }
 
                 MetricStrip(items: [
-                    MetricStripItem(label: "Thermal State", value: monitor.thermal.state.rawValue, detail: "ProcessInfo.thermalState", status: monitor.thermal.state.status),
-                    MetricStripItem(label: "CPU Temp", value: monitor.thermal.cpuTemperatureCelsius.map { String(format: "%.1f °C", $0) } ?? "Unavailable", detail: "Requires private SMC", status: .neutral),
-                    MetricStripItem(label: "GPU Temp", value: monitor.thermal.gpuTemperatureCelsius.map { String(format: "%.1f °C", $0) } ?? "Unavailable", detail: "Requires private SMC", status: .neutral),
-                    MetricStripItem(label: "Fan Speed", value: monitor.thermal.fanSpeedRPM.map { "\($0) RPM" } ?? "Unavailable", detail: "Requires private SMC", status: .neutral)
+                    MetricStripItem(label: "Thermal State", value: monitor.thermal.state.rawValue, status: monitor.thermal.state.status),
+                    MetricStripItem(label: "CPU Temp", value: monitor.thermal.cpuTemperatureCelsius.map { String(format: "%.1f °C", $0) } ?? "Unavailable", status: .neutral),
+                    MetricStripItem(label: "GPU Temp", value: monitor.thermal.gpuTemperatureCelsius.map { String(format: "%.1f °C", $0) } ?? "Unavailable", status: .neutral),
+                    MetricStripItem(label: "Fan Speed", value: monitor.thermal.fanSpeedRPM.map { "\($0) RPM" } ?? "Unavailable", status: .neutral)
                 ])
 
                 PulseCard {

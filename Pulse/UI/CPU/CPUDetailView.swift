@@ -222,11 +222,7 @@ struct CPUDetailView: View {
                             let avg = filteredSamples.isEmpty ? monitor.cpu.totalUsage : filteredSamples.map(\.total).reduce(0, +) / Double(filteredSamples.count)
                             KeyValueRow(key: "Window Peak", value: PulseFormat.percent(peak, decimals: 1))
                             KeyValueRow(key: "Window Average", value: PulseFormat.percent(avg, decimals: 1))
-                            KeyValueRow(key: "Spikes (≥ 85%)", value: "\(filteredSamples.filter { $0.total >= 85 }.count) samples")
-                            Divider().overlay(PulseTheme.border)
-                            Text("Source: Mach host_processor_info (PROCESSOR_CPU_LOAD_INFO) delta ticks across \(monitor.cpu.logicalCoreCount) logical CPUs.")
-                                .font(.system(size: 11))
-                                .foregroundStyle(PulseTheme.secondaryText)
+                            KeyValueRow(key: "Spikes (≥ 85%)", value: "\(filteredSamples.filter { $0.total >= 85 }.count)")
                         }
                     }
                     .frame(width: 280)

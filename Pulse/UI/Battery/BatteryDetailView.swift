@@ -87,7 +87,7 @@ struct BatteryDetailView: View {
                                     .font(.system(size: 13, weight: .semibold))
                                     .foregroundStyle(PulseTheme.primaryText)
                                 if capacityHistory.isEmpty {
-                                    Text("Pulse logs maximum capacity hourly to build a longitudinal baseline. Single readings do not constitute a complete degradation analysis.")
+                                    Text("No historical capacity readings yet.")
                                         .font(.system(size: 11))
                                         .foregroundStyle(PulseTheme.secondaryText)
                                 } else {
@@ -98,10 +98,6 @@ struct BatteryDetailView: View {
                                         )
                                     }
                                 }
-                                Divider().overlay(PulseTheme.border)
-                                Text("Note: Per-app energy impact is not substituted with CPU% without clear labeling; inspect CPU & Processes for workload attribution.")
-                                    .font(.system(size: 11))
-                                    .foregroundStyle(PulseTheme.secondaryText)
                             }
                         }
                     }

@@ -62,7 +62,7 @@ struct ProcessesView: View {
         VStack(alignment: .leading, spacing: 14) {
             SectionHeader(
                 title: "Processes",
-                subtitle: "Real-time process inspection via libproc & proc_pidinfo"
+                subtitle: "Running processes & resource usage"
             ) {
                 HStack(spacing: 8) {
                     TextField("Search name, PID, user…", text: $searchText)
