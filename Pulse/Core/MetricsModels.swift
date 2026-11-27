@@ -261,6 +261,13 @@ struct GPUDeviceSummary: Identifiable, Sendable, Equatable {
     let driverStatusNote: String
 }
 
+struct GPUSample: Identifiable, Sendable {
+    let id = UUID()
+    let timestamp: Date
+    let utilizationPercent: Double
+    let inUseMemoryBytes: UInt64
+}
+
 struct GPUMetrics: Sendable, Equatable {
     let timestamp: Date
     let devices: [GPUDeviceSummary]

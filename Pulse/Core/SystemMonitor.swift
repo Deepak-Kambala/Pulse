@@ -27,6 +27,7 @@ final class SystemMonitor: ObservableObject {
     // Rolling In-Memory Histories (up to 6 hours at ~2s/5s)
     @Published private(set) var cpuHistory: [CPUSample] = []
     @Published private(set) var memoryHistory: [MemorySample] = []
+    @Published private(set) var gpuHistory: [GPUSample] = []
     @Published private(set) var batteryHistory: [BatterySample] = []
     @Published private(set) var thermalHistory: [ThermalSample] = []
     @Published private(set) var networkHistory: [NetworkSample] = []
@@ -191,7 +192,17 @@ final class SystemMonitor: ObservableObject {
                 trimHistory(&memoryHistory, maxAge: 6 * 3600)
             }
         }
-        if let g = collected.3 { self.gpu = g }
+        if let g = collected.3 {
+            self.gpu = g
+            if let primary = g.primaryDevice, let util = primary.utilizationPercent {
+                gpuHistory.append(GPUSample(
+                    timestamp: g.timestamp,
+                    utilizationPercent: util,
+                    inUseMemoryBytes: primary.inUseSystemMemoryBytes ?? 0
+                ))
+                trimHistory(&gpuHistory, maxAge: 6 * 3600)
+            }
+        }
         if let b = collected.4 {
             self.battery = b
             if b.hasBattery {

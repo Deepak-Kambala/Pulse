@@ -152,7 +152,8 @@ struct OverviewView: View {
     }
 
     private var gpuCard: some View {
-        Button { selection = .gpu } label: {
+        let points = monitor.gpuHistory.suffix(45).map { ($0.timestamp, $0.utilizationPercent) }
+        return Button { selection = .gpu } label: {
             PulseCard(isInteractive: true) {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
@@ -160,29 +161,34 @@ struct OverviewView: View {
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(PulseTheme.primaryText)
                         Spacer()
-                        StatusPill(status: monitor.gpu.isAvailable ? .healthy : .neutral, customLabel: monitor.gpu.isAvailable ? "Metal" : "Unavailable")
+                        StatusPill(status: monitor.gpu.isAvailable ? .healthy : .neutral, customLabel: monitor.gpu.primaryDevice?.name ?? "Unavailable")
                     }
                     if let gpu = monitor.gpu.primaryDevice {
-                        Text(gpu.name)
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(PulseTheme.primaryText)
-                            .lineLimit(1)
-                        Text(gpu.familyDescription)
-                            .font(.system(size: 11))
-                            .foregroundStyle(PulseTheme.secondaryText)
-                        Divider().overlay(PulseTheme.border)
-                        KeyValueRow(
-                            key: "Utilization",
-                            value: gpu.utilizationPercent.map { PulseFormat.percent($0, decimals: 1) } ?? "Unavailable (public API)"
-                        )
-                        KeyValueRow(
-                            key: "Max Working Set",
-                            value: PulseFormat.bytes(gpu.recommendedMaxWorkingSetBytes)
-                        )
-                        KeyValueRow(
-                            key: "Unified Memory",
-                            value: gpu.hasUnifiedMemory ? "Yes" : "Discrete"
-                        )
+                        HStack(alignment: .firstTextBaseline) {
+                            Text(gpu.utilizationPercent.map { PulseFormat.percent($0, decimals: 0) } ?? "—")
+                                .font(.system(size: 26, weight: .semibold, design: .rounded))
+                                .monospacedDigit()
+                                .foregroundStyle(PulseTheme.primaryText)
+                            Text("GPU Usage")
+                                .font(.system(size: 12))
+                                .foregroundStyle(PulseTheme.secondaryText)
+                            Spacer()
+                            if let mem = gpu.inUseSystemMemoryBytes {
+                                Text("Mem \(PulseFormat.bytes(mem))")
+                                    .font(.system(size: 11))
+                                    .monospacedDigit()
+                                    .foregroundStyle(PulseTheme.secondaryText)
+                            }
+                        }
+                        SparklineChart(points: points, color: PulseTheme.accent, maxY: 100)
+                            .frame(height: 56)
+                        HStack {
+                            Text(gpu.hasUnifiedMemory ? "Unified Memory" : "Discrete")
+                            Spacer()
+                            Text("Max \(PulseFormat.bytes(gpu.recommendedMaxWorkingSetBytes))")
+                        }
+                        .font(.system(size: 11))
+                        .foregroundStyle(PulseTheme.secondaryText)
                     } else {
                         Text("No Metal GPU detected.")
                             .font(.system(size: 12))
