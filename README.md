@@ -16,6 +16,11 @@ Pulse is a native, local-first macOS system monitoring and diagnostics applicati
 - **Pulse Insights**: Deterministic anomaly detection rules with evidence, suggested actions, deduplication, Acknowledge, and Dismiss.
 - **Menu Bar Extra**: Configurable live indicators (CPU %, Memory %, Pressure, Battery %, Download/Upload) and lightweight dropdown.
 
+## Documentation
+
+- **[User Guide (GUIDE.md)](GUIDE.md)** — Detailed explanation of every section, card, chart, and metric in Pulse and how to interpret them.
+- **[Architecture (ARCHITECTURE.md)](ARCHITECTURE.md)** — Internal module layout, concurrency model, and public macOS API sources.
+
 ## Building & Running
 
 ### Option 1: Build `.app` Bundle with SwiftPM (Command Line)
